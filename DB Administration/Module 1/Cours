@@ -14,47 +14,47 @@
 
 -- Cours 1 : Que fais le DBA ?
 
-    1- Vérifier l''intégrité des bases
+    1- Vérifier l'intégrité des bases
 
     2- Utiliser les analyses pour avoir la meilleure configuration possible pour les performances de la base (CPU, Stockage etc.)
 
     3- Répondre aux besoins de support utilisateurs
 
-    4- Collaborer avec les développeur et les autres analystes
+    4- Collaborer avec les développeurs et les autres analystes
 
-    5- Monitorer l''activité de la base de données
+    5- Monitorer l'activité de la base de données
 
 
 -- Cours 2 : Cycle de vie de la base de données
 
     1- Analyse des prérequis (comprendre la donnée, les utilisateurs, les producteurs de la donnée et comment la donnée sera utilisée)
 
-    2- Design et plan (modéliser la base de donnée à partir du modèle ERD, taille, capacité, mémoire, CPU, fichiers log, stockage de la base de donnée e)
+    2- Design et plan (modéliser la base de donnée à partir du modèle ERD, taille, capacité, mémoire, CPU, fichiers log, stockage de la base de donnée)
 
     3- Implémentation (créer les objets, les profils d'accessibilité', automatisation comme les backup et la migration de la donnée)
 
-    4- Administration et maintenance (gérer le système, avoir des rapports, faire les mises à jour, faire de la veille technologique pour suggérer des améliorations, garantir la sécurité des données, alertes d'utilisation')
+    4- Administration et maintenance (gérer le système, avoir des rapports, faire les mises à jour, faire de la veille technologique pour suggérer des améliorations, garantir la sécurité des données, alertes d'utilisation)
 
 
 -- Cours 3 : Considérations éthiques, sécuritaires et de conformité
 
         '1-- Ethiques fondamentales '
         
-            1-1- Transparence (dire aux gens l'information collectée')
+            1-1- Transparence (dire aux gens l'information collectée)
 
             1-2- consentement (avoir le consentement des gens avant de collecter leurs données)
 
-            1-3- intégrité (être intègre vis à vis des procédures que vous utilisez pour collecter l'information' et à quoi ça va servir concrètement)
+            1-3- intégrité (être intègre vis à vis des procédures que vous utilisez pour collecter l'information et à quoi ça va servir concrètement)
 
         '2-- Design du système de sécurité'
 
-            2-1- Protection vis à vis des accès intrusifs et non authorisés
+            2-1- Protection vis à vis des accès intrusifs et non autorisés
 
             2-2- Stockage sécurisé
 
-            2-3- Accès précis (seuls les données authorisées sont visibles par les utilisateurs aux profils associés)
+            2-3- Accès précis (seules les données autorisées sont visibles par les utilisateurs aux profils associés)
 
-            2-4- Sécurité lors du mouvement de la données
+            2-4- Sécurité lors du mouvement de la donnée
 
             2-5- Archiver de manière sécurisée la donnée (les backup surtout)
 
@@ -62,7 +62,7 @@
 
                 3-1- Faire attention aux normes nationales et internationales sur les bases de données spécifiques aux données stockées (RGPD etc)
 
-                3-2- Faire attention aux exigences du domaine dans lequel on opère par exemple l'interopérabilité' etc.
+                3-2- Faire attention aux exigences du domaine dans lequel on opère par exemple l'interopérabilité etc.
 
                 3-3- Respecter les règles de fonctionnement définis par l'entreprise'
                 
@@ -83,7 +83,7 @@
         
         3-  'Objets de la base de données' : Tables, index, contraintes, fonctions, vues, alias, etc.
 
-        On peut créer plusieurs instances sur un mêe serveur pour éviter l''environnement unique pour les bases de données  
+        On peut créer plusieurs instances sur un même serveur pour éviter l''environnement unique pour les bases de données  
         On peut aussi utiliser une instance pour la prod et l''autre pour le dev.
 
                 Tables : lignes et colonnes contenant la donnée
@@ -108,10 +108,7 @@
 
         --Pour PostgreSQL c'est le System Catalog
 
-        les fichiers de configuration (.config, .cfg) et d''initialisation (.ini) sont utilisés pour 
-
-
-        'Comment configurer les bases de données ?'
+        les fichiers de configuration (.config, .cfg) et d''initialisation (.ini) sont utilisés pour configurer les bases de données ?'
 
         --------------------------------------------------------------------------------------------------
         |   'serveur  '                               |            'CLOUD'                               |
@@ -129,7 +126,7 @@
 
 -- Cours 6 : Stockage de base de données
 
-        En tant que DBA il faut toujours s''arrurer que le système dispose d''assez de capacité pour stocker les informations qu''elle est censée reçevoir
+        En tant que DBA il faut toujours s'arrurer que le système dispose d''assez de capacité pour stocker les informations qu''elle est censée reçevoir
 
         Il faut donc :
 
@@ -159,6 +156,7 @@
 
         -- Database Partitions
 
-        On divise la données en plusieurs partitions de base de données lorsque la donnée est très importante (une partie de la donnée est stockée dans chaque partition)
+        On divise la données en plusieurs partitions de base de données lorsque la donnée est très importante 
+        (une partie de la donnée est stockée dans chaque partition)
 
 
