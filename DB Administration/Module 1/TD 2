@@ -1,0 +1,76 @@
+
+-- TD 2 : Hands-on Lab: MySQL Configuration, Storage Engines, and System Tables ---
+
+        'CRER UNE BASE DE DONNEES SUR MYSQL '
+
+        Username: ltodome
+
+        Password: MjM5MC1sdG9kb21l
+
+        coller dans le terminal ceci : wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_script.sql 
+
+
+        -- Créer une base de données world
+        CREATE DATABASE world; 
+
+        -- Pour utiliser la base de données
+        use world;
+
+        -- Exécuter la commande cidessous pour finaliser la création de la base de données
+        SOURCE world_mysql_script.sql; 
+
+        -- Afficher la liste des tables
+        SHOW TABLES;
+
+        -- Afficher la liste des machines de staockage
+
+        SHOW Engines;
+
+        '+--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+        | Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
+        +--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+        | FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
+        | MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+        | InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+        | PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+        | MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+        | MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+        | BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+        | CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+        | ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO  '
+
+        -- Créer une table et la stocker dans la machine 
+        CREATE TABLE csv_test (i INT NOT NULL, c CHAR(10) NOT NULL) ENGINE = CSV;
+        On voit la nouvelle table ajoutée
+        '+-----------------+
+        | Tables_in_world |
+        +-----------------+
+        | city            |
+        | country         |
+        | countrylanguage |
+        | csv_test        |
+        +-----------------+
+        4 rows in set (0.00 sec)
+        '
+
+        -- Ajouter de la donnée dans la nouvelle table
+        INSERT INTO csv_test VALUES(1,'data one'),(2,'data two'),(2,'data three');
+
+        -- Sélectionner toutes les lignes
+        SELECT * FROM csv_test;
+
+        -- Selectionner un attribut dans la table user
+        SELECT User from user;
+
+        -- Afficher toutes les bases de données 
+        SHOW Databases
+
+        -- Sélection avec plusieurs critères
+        SELECT table_name, engine FROM INFORMATION_SCHEMA.TABLES 
+        WHERE table_name = 'country' OR table_name = 'city' 
+        OR table_name = 'countrylanguage' OR table_name = 'csv_test';
+
+
+        -- créer une table en spécifiant la machine
+        CREATE TABLE MyISAM_test (i INT NOT NULL, c CHAR(10) NOT NULL) ENGINE = MYISAM;
+
