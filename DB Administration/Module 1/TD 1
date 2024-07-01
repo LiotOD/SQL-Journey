@@ -1,0 +1,41 @@
+
+-- TD 1 : Hands-on Lab: Db2 System Tables---
+
+        1. Remplir les informations dans la base de données 
+                
+                Charger la requête SQL disponible ici : C:\Users\LTodome\Documents\Personnel\Cours ERD IBM\Module 1 
+
+
+        2. Accéder aux tables de la base
+
+                ' requêter la table SYSTABLES ' : select * from sysibm.systables;
+
+        Les tables systèmes listent la liste des tables
+
+                'Query SYSTABLES by CREATOR'
+
+                select * from sysibm.systables where creator = 'ZXH88799';   
+                
+
+        3. Mettre à jour une table de la base de données
+
+        essayer de mettre à jour directement une table système ne 'MARCHE PAS !!!!!' 
+
+
+        
+                '1. Query the SYSTABLES table by the schema name to display the five tables that belong to the sample HR database.'
+
+                        select * from sysibm.systables where creator = 'ZXH88799';
+
+
+                '2. Try directly deleting the row corresponding to the EMPLOYEES table from the SYSIBM.SYSTABLES system table.'
+
+                        delete from SYSIBM.SYSTABLES where NAME ='EMPLOYEES'
+                        delete from SYSIBM.SYSTABLES where NAME ='EMPLOYEES' ne marche pas, on ne peut pas directement supprimer des objets dans la table système
+                
+                '3. Drop the EMPLOYEES table from the database.'
+                        drop table employees
+
+                '4. Query the SYSTABLES table by schema name to confirm that the EMPLOYEES table was successfully dropped from the database.'
+                        
+                        select * from sysibm.systables where creator = 'ZXH88799';
