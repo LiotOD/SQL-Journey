@@ -1,0 +1,18 @@
+
+-- TD 3 : PostgreSQL Instance Configuration and System Catalog
+
+        'Open a new terminal in the Lab'
+
+        -- Vérifier que la base de données a été bien restorée
+        \dt 
+
+        -- Le fichier de onfiguration contenant les paramètres 
+        c''est 'postgresql.conf'
+
+        --QUIZZ
+        Which of the following schemas is the default schema? User schema
+
+        Which of the following describes the difference between containers and tablespaces? One or more containers store each tablespace
+
+
+
