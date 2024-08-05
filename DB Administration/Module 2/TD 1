@@ -1,0 +1,35 @@
+
+--TD1
+
+        1- Importer et exporter la donnée avec IBM cloud
+
+        2- Importer et exporter la donnée en utilisant l''outil Datasette 
+                -- https://datasette.io/
+
+                - add data avec l'url'
+
+                - requêtes de sélection et de compte : SELECT count(*) FROM hospitals; select * from hospitals
+
+                - exporter la donnée 
+
+        3- Backup et restauration avec PostgreSQL
+
+                ouvrir un nouveau terminal : wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/example-guided-project/flights_RUSSIA_small.sql 
+
+                        --- \i importer des données dans la base-----
+
+                dans le cli : \i flights_RUSSIA_small.sql 
+
+                        --- \dt afficher les tables ----
+                puis : \dt
+
+                selectionner les données : SELECT * FROM aircrafts_data;
+
+                insérer de nouvelles lignes : INSERT INTO aircrafts_data(aircraft_code, model, range) VALUES (380, '{"en": "Airbus A380-800"}', 15700);
+
+                sélectionner des données : SELECT * FROM aircrafts_data;
+
+                quitter l'instance' avec : \q
+
+        -------------------------------
+                se connecter à pgAdmin et faire un backup (format Tar)
