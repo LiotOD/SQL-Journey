@@ -1,0 +1,73 @@
+
+
+-- TD 2 : Monitoring et optimisation dans une base de données MySQL version théorie
+
+       
+      ' I- MONITORING DE LA BASE DE DONNEES MYSQL'
+       
+       
+        Pour faire le monitoring, on utilisera dans MySQL la console d''administration phpmyadmin. Le monitoring se passe dans l''onglet status ou ETAT
+
+
+
+        1* ETAT DU SERVEUR : 
+        
+                        1.1* Trafic : On a des infos sur le trafic 
+                                                --> Entrant : nombre d'octets reçus par le serveur 
+                                                --> Sortant : nombre d'octets envoyés par le serveur 
+                                                --> En suivant ces chiffres on peut identifier tout traffic anormal 
+
+
+                        1.2* Connexions : On a des infos sur le nombre maxi de connexions simultanées. On a
+
+                                                                --> le nombre de tentatives de connexion échouées
+                                                                --> le nombre de tentatives de connexion avortées
+                                                                --> le nombre total de connexions (réussies ou non).
+
+
+        2* Processus : on voit la liste des opérations en cours dans le serveur. Il y aura toujours au moins deux utilisateurs :
+                                                
+                                                --> event_scheduler et root.
+
+                Pour voir la liste des processus en sql sur mysql on exécute la requête : --> SHOW PROCESSLIST
+
+
+        3* Statistiques sur les requêtes : on voit les types de requêtes exécutées et leur fréquence d''exécution. Il s''agit des 
+        
+                                                --> requêtes exécutées par les utilisateurs 
+                                                --> requêtes exécutées par phpMyAdmin en arrière-plan.
+                                                -- il y a un diagramme en cercle qui résume tout ça
+
+        4* Toutes les variables d''état : on voit la liste des variables, leur valeur et leur description. 
+                                        Si la valeur de votre variable est rouge, cela signifie qu'elle doit être examinée et ajustée, si nécessaire.'
+
+                                                --> Par exemple, si la variable "Aborted connects", qui représente le nombre de tentatives de connexion au serveur ayant échoué, est rouge alors le chiffre est plutôt élevé, 
+                                                -- ce qui signifie qu'il doit être examiné. Un nombre élevé de connexions interrompues peut signifier que le programme n'a pas été fermé correctement, 
+                                                -- que la session a expiré, qu'une erreur s'est produite au milieu d'un transfert de données ou que des externes ont tenté à plusieurs reprises de rentrer dans le système
+
+                      Pour plus de détail sur chaque variale : https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html 
+
+
+        5* Moniteur :   on peut optimiser la configuration du serveur et identifier des problèmes tels que des requêtes intensives en se basant sur les graphiques en temps réel fournis. Par défaut, on ne voit que trois graphiques : 
+
+                                                -->  Questions : nombre de requêtes en cours d'exécution à un moment donné, y compris les requêtes en arrière-plan de phpMyAdmin
+                                                
+                                                --> Connexions / Processus : aperçu des connexions et des processus 
+                                                
+                                                --> Trafic : octets entrants et sortants reçus et envoyés
+
+        
+        6* Conseiller : fournit des recommandations générales basées sur l''analyse des variables du serveur pour aider à surveiller et à optimiser la base de données.
+
+
+
+        ' II- OPTIMISATION DE LA BASE DE DONNEES MYSQL'
+
+                Il est préférable de garder les types de données simples, en utilisant le plus petit type de données ou un type de données spécialisé lorsque cela est possible. 
+                
+                        --> Les types de données plus petits ont tendance à être plus rapides car ils nécessitent moins d''espace.
+                        
+                        --> Les types de données spécialisés tels que la date et l''heure (DATETIME) étant optimisés pour économiser l''espace disque et la mémoire. 
+
+                        --> il est utile d'éviter les valeurs NULL dans les colonnes lorsque cela est possible. Les valeurs non nulles rendent les opérations plus rapides car elles permettent de mieux utiliser les index et éliminent la nécessité de vérifier si chaque valeur est NULL.
+              
