@@ -1,0 +1,440 @@
+               
+-- TD 2: Automatiser les taches dans MySQL en utilisant des scripts Shell
+
+                -- Quels objectifs 
+
+                        'Dans cet exercice, vous allez créer une base de données, sauvegarder la base de données à l''aide d''un script automatisé, et enfin la tronquer et la restaurer.'
+
+                        - Create the shell script to back up the database.
+                        - Create a cron job to run the backup script thereby creating a backup file.
+                        - Truncate the tables in the database.
+                        - Restore the database using the backup file.
+
+
+        
+        -- Exercice 1 : créer une base de données
+
+                        1- Aller dans un terminal et télécharger les données : -- wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0110EN-SkillsNetwork/datasets/sakila/sakila_mysql_dump.sql
+
+                        2- Démarrer le service mysql et sauvegarder le mot de passe : -- start_mysql --- MTIyODEtbHRvZG9t
+
+                        3- Ouvrir le ficher  .my.cnf, pour changer le mot de passe : -- sudo nano ~/.my.cnf 
+
+                                                                                -- remplacer le mot de passe : [mysql]
+                                                                                        'host = 127.0.0.1
+                                                                                        port = 3306
+                                                                                        user = root
+                                                                                        password = MTIyODEtbHRvZG9t
+
+                                                                                        [mysqlimport]
+                                                                                        host = 127.0.0.1
+                                                                                        port = 3306
+                                                                                        user = root
+                                                                                        password = <Your MySQL Password>
+
+                                                                                        [mysqldump]
+                                                                                        host = 127.0.0.1
+                                                                                        port = 3306
+                                                                                        user = root
+                                                                                        password = <Your MySQL Password>
+
+                                                                                        [mysqlshow]
+                                                                                        host = 127.0.0.1
+                                                                                        port = 3306
+                                                                                        user = root
+                                                                                        password = <Your MySQL Password>
+
+                                                                                        [mysqlcheck]
+                                                                                        host = 127.0.0.1
+                                                                                        port = 3306
+                                                                                        user = root
+                                                                                        password = <Your MySQL Password>
+
+                                                                                        [mysqladmin]
+                                                                                        host = 127.0.0.1
+                                                                                        port = 3306
+                                                                                        user = root
+                                                                                        password = <Your MySQL Password>'
+
+
+                        4- Enregistrer et quitter avec CTRL + O puis entrée et CTRL + X
+
+                        5- Créer une base de données : -- create database sakila;
+
+
+        -- Exercice 2 : restaurer la structure et les données d'une table 
+
+                1- Utiliser la base de données crée plus haut :-- use sakila;
+
+                2- restaure la base de données en utilisant le fichier téléchargé dans l'exercice précédent' :-- source sakila_mysql_dump.sql;
+
+                3- Afficher toutes les tables de la base de données : -- SHOW FULL TABLES WHERE table_type = 'BASE TABLE';
+                
+                
+        -- Exercice 3 : comprendre le principe des backups pour une base de données et automatiser le backup de la base
+
+                L''objectif c''est de créer un script shell qui effectue les opérations suivantes :
+
+                        Écriture de la base de données dans un fichier sql créé avec un horodatage, à l''aide de la commande mysqldump.
+
+                        Compresser le fichier sqlfile dans un fichier zip à l''aide de la commande gzip.
+
+                        Supprime le fichier sqlfile à l''aide de la commande rm
+
+                        Supprime la sauvegarde après 30 jours
+
+
+                A - 'Avant de passer au script il faut comprendre les éléments suivants' :
+
+                        1- Pour commencer, vous avez une base de données que vous voulez sauvegarder. Vous allez stocker le nom de la base de données dans une variable.
+
+                                -- DATABASE='sakila'
+
+
+                        2- C'est toujours une bonne pratique d'imprimer quelques logs, qui peuvent aider au débogage.
+
+                                -- echo "Pulling Database : This may take a few minutes"
+
+
+                        3- Vous allez également définir le dossier de sauvegarde où seront stockés le SQL et les fichiers zippés.
+
+                                -- backupfolder=/home/theia/backups
+
+
+                        4- Vous allez décider et définir le nombre de jours où la sauvegarde devra être conservée.
+                                -- keep_day=30
+
+
+                        5- Vous définirez le nom du fichier SQL dans lequel vous viderez la base de données comme "all-database-" suffixé avec l'horodatage actuel' et l'extension .sql', 
+                        et le fichier zip dans lequel vous compresserez le fichier SQL comme "all-database-" suffixé avec l'horodatage actuel et l'extension .gz.
+
+                                -- sqlfile=$backupfolder/all-database-$(date +%d-%m-%Y_%H-%M-%S).sql
+                                -- zipfile=$backupfolder/all-database-$(date +%d-%m-%Y_%H-%M-%S).gz
+
+                        6- Maintenant que tous les placeholders sont créés, vous allez créer la sauvegarde SQL. Dans MySQL, cela peut être accompli avec la commande mysqldump. 
+                        Selon que l''opération est réussie ou non, un journal est imprimé. Si l''opération est réussie, vous devez compresser le fichier .sql dans un .gz et supprimer le fichier .sql.
+
+                                --                       if mysqldump  $DATABASE > $sqlfile ; then
+                                --                               echo 'Sql dump created'
+                                --                               # Compress backup 
+                                --                               if gzip -c $sqlfile > $zipfile; then
+                                --                                       echo 'The backup was successfully compressed'
+                                --                               else
+                                --                                       echo 'Error compressing backupBackup was not created!' 
+                                --                                      exit
+                                --                              fi
+                                --                               rm $sqlfile 
+                                --                       else
+                                --                               echo 'pg_dump return non-zero code No backup was created!' 
+                                --                               exit
+                                --                       fi
+
+
+                        7- Enfin, vous supprimerez toutes les sauvegardes qui sont dans le système depuis plus longtemps que le temps que vous avez décidé de conserver la sauvegarde.
+
+                                -- find $backupfolder -mtime +$keep_day -delete
+
+
+
+                B - 'Création d"un script Shell pour les sauvegardes de bases de données MySQL'
+        
+                        1- Créer un fichier : -- sqlbackup.sh 
+
+                        2- Créer le code : -- 
+
+                        --                                                        #!/bin/sh
+                        --                                # The above line tells the interpreter this code needs to be run as a shell script.
+
+                        --                                # Set the database name to a variable. 
+                        --                                DATABASE='sakila'
+
+                        --                                # This will be printed on to the screen. In the case of cron job, it will be printed to the logs.
+                        --                                echo "Pulling Database: This may take a few minutes"
+
+                        --                                # Set the folder where the database backup will be stored
+                        --                                backupfolder=/home/theia/backups
+
+                        --                               # Number of days to store the backup 
+                        --                                keep_day=30
+
+                        --                                sqlfile=$backupfolder/all-database-$(date +%d-%m-%Y_%H-%M-%S).sql
+                        --                                zipfile=$backupfolder/all-database-$(date +%d-%m-%Y_%H-%M-%S).gz
+
+                        --                                # Create a backup
+
+                        --                                if mysqldump  $DATABASE > $sqlfile ; then
+                        --                                echo 'Sql dump created'
+                        --                                # Compress backup 
+                        --                                if gzip -c $sqlfile > $zipfile; then
+                        --                                        echo 'The backup was successfully compressed'
+                        --                                else
+                        --                                        echo 'Error compressing backupBackup was not created!' 
+                        --                                        exit
+                        --                                fi
+                        --                                rm $sqlfile 
+                        --                                else
+                        --                                echo 'pg_dump return non-zero code No backup was created!' 
+                        --                                exit
+                        --                                fi
+
+                        --                                # Delete old backups 
+                        --                                find $backupfolder -mtime +$keep_day -delete
+
+
+                        3- Enregistrer le fichier : CTRL + S
+
+                        4- Donner l''autorisation d''exécuter le fichier de script shell, au propriétaire (vous-même), en exécutant la commande suivante dans le terminal.
+                                u signifie utilisateur ou créateur, x signifie exécuter, et r signifie autorisation de lecture :
+
+                                        -- sudo chmod u+x+r sqlbackup.sh
+
+
+                        5- créer un dossier pour enregistrer les sauvegardes en exécutant la commande suivante :
+
+                                        -- mkdir /home/theia/backups
+
+
+                C - 'Configuration d''une tâche Cron'
+
+                        1. Définitions : 
+                                
+                                'Cron est un système qui aide les utilisateurs de Linux à planifier n"importe quelle tâche. 
+                                Il peut s"agir d"un script shell ou d"une simple commande bash.
+                                Une tâche cron nous aide à automatiser nos tâches de routine et elle peut être horaire, quotidienne, mensuelle, etc.
+                                Un crontab (table cron) est un fichier texte qui spécifie la planification des tâches cron.
+                                Chaque ligne du fichier crontab contient six champs séparés par un espace suivi de la commande à exécuter.'
+
+                        2. Paramètres d''une tache Cron
+
+                                Les cinq premiers champs peuvent contenir une ou plusieurs valeurs séparées par une virgule ou une plage de valeurs séparées par un trait d''union.
+
+                                La syntaxe est : * * * * * /repertoire/fichier_shell.sh > /reportoire fichier log/backup.log
+
+                                                astérisque 1 : Minutes (0-59)
+                                                astérisque 2 : Heure (0-23)
+                                                astérisque 3 : Jour du mois  (1-31)
+                                                astérisque 4 : Mois (1-12)
+                                                astérisque 5 : Jour de la semaine (0-7 avec Dimanche = 0 ou 7)
+
+
+                                '*'       -- L'opérateur astérisque signifie toute valeur ou toujours. Si vous avez l'astérisque dans le champ Heure, 
+                                          -- cela signifie que la tâche sera exécutée chaque heure.
+
+                                ','       -- L'opérateur virgule vous permet de spécifier une liste de valeurs à répéter. Par exemple, si vous avez 1,3,5 dans le champ Heure, 
+                                          -- la tâche sera exécutée à 1 heure, 3 heures et 5 heures du matin.
+
+                                '-'       -- L'opérateur tiret vous permet de spécifier une plage de valeurs. Si vous indiquez 1-5 dans le champ Jour de la semaine, 
+                                          -- la tâche sera exécutée tous les jours de la semaine (du lundi au vendredi).
+
+                                '/'        -- L'opérateur barre oblique vous permet de spécifier des valeurs qui seront répétées sur un certain intervalle entre elles. 
+                                           -- Par exemple, si vous avez */4 dans le champ Heure, cela signifie que l'action sera exécutée toutes les quatre heures. 
+                                           -- C'est la même chose que de spécifier 0,4,8,12,16,20. Au lieu d'un astérisque devant l'opérateur slash, 
+                                           -- vous pouvez également utiliser une plage de valeurs. Par exemple, 1-30/10 signifie la même chose que 1,11,21.
+
+
+                        3. Pratique avec une tache cron qui s''exécute chaque 2 minutes pour backup la base 
+
+                                - ouvrir l''éditeur cron avec la commande : -- crontab -e
+
+                                - ajouter ce code : -- */2 * * * * /home/project/sqlbackup.sh > /home/project/backup.log
+
+                                - enregistrer avec CTRL + O et entrée puis quitter  CTRL + X
+
+                                - démarrer le service cron avec le terminal : -- sudo service cron start
+
+                                - Lancer après quelques minutes la commande : -- ls -l /home/theia/backups 
+                                                                                on voit qu''il y a eu des backup chaque 2 minutes
+
+                                - Pour arrêter le service on fait : sudo service cron stop
+
+                                ------- Pour aller plus loin -----
+
+                                ' Faire un cron qui backup la base chaque semaine le lundi à 12h00.'
+
+                                0 12 * * 1 /home/project/sqlbackup.sh > /home/project/backup.log
+
+                                ' Faire un cron qui backup la base chaque jour à 6h00.'
+
+                                0 6 * * * /home/project/sqlbackup.sh > /home/project/backup.log
+
+                                'D"autres exemples' 
+
+                               --  Voici un site utile : https://www.freeformatter.com/cron-expression-generator-quartz.html
+
+                                        '
+                                        * * * ? * * * Chaque seconde
+                                        0 * * ? * * * Toutes les minutes
+                                        0 */2 * ? * * * Toutes les minutes paires
+                                        0 1/2 * ? * * Chaque minute irrégulière
+                                        0 */2 * ? * * Toutes les 2 minutes
+                                        0 */3 * ? * * Toutes les 3 minutes
+                                        0 */4 * ? * * Toutes les 4 minutes
+                                        0 */5 * ? * * Toutes les 5 minutes
+                                        0 */10 * ? * * Toutes les 10 minutes
+                                        0 */15 * ? * * Toutes les 15 minutes
+                                        0 */30 * ? * Toutes les 30 minutes
+                                        0 15,30,45 * ? * * Toutes les heures aux minutes 15, 30 et 45
+                                        0 0 * ? * * Toutes les heures
+                                        0 0 */2 ? * * Toutes les heures
+                                        0 0 0/2 ? * * Toutes les heures paires
+                                        0 0 1/2 ? * * Toutes les heures impaires
+                                        0 0 */3 ? * Toutes les trois heures
+                                        0 0 */4 ? * * Toutes les quatre heures
+                                        0 0 */6 ? * Toutes les six heures
+                                        0 0 */8 ? * Toutes les huit heures
+                                        0 0 */12 ? * Toutes les douze heures
+                                        0 0 0 * * ?	Tous les jours à minuit - 12 heures
+                                        0 0 1 * * ?	Tous les jours à 1 heure du matin
+                                        0 0 6 * * ?	Tous les jours à 6h du matin
+                                        0 0 12 * * ?	Tous les jours à midi - 12 heures
+                                        0 0 12 * * ?	Tous les jours à midi - 12 heures
+                                        0 0 12 ? * SUN Tous les dimanches à midi
+                                        0 0 12 ? * LUN Tous les lundis à midi
+                                        0 0 12 ? * MAR Chaque mardi à midi
+                                        0 0 12 ? * MER Tous les mercredis à midi
+                                        0 0 12 ? * JEU Chaque jeudi à midi
+                                        0 0 12 ? * VEN Tous les vendredis à midi
+                                        0 0 12 ? * SAT Tous les samedis à midi
+                                        0 0 12 ? * LUN-VEN Tous les jours de la semaine à midi
+                                        0 0 12 ? * SUN,SAT Tous les samedis et dimanches à midi
+                                        0 0 12 */7 * ?	Tous les 7 jours à midi
+                                        0 0 12 1 * ?	Le 1er de chaque mois, à midi
+                                        0 0 12 2 * ?	Le 2e jour du mois, à midi
+                                        0 0 12 15 * ?	Le 15 de chaque mois, à midi
+                                        0 0 12 1/2 * ?	Tous les 2 jours à partir du 1er du mois, à midi
+                                        0 0 12 1/4 * ?	Tous les 4 jours à partir du 1er du mois, à midi
+                                        0 0 12 L * ?	Tous les mois, le dernier jour du mois, à midi
+                                        0 0 12 L-2 * ?	Tous les mois, l''avant-dernier jour du mois, à midi
+                                        0 0 12 LW * ?	Tous les mois, le dernier jour de la semaine, à midi
+                                        0 0 12 1L * ?	Chaque mois, le dernier dimanche, à midi
+                                        0 0 12 2L * ?	Chaque mois, le dernier lundi, à midi
+                                        0 0 12 6L * ?	Chaque mois, le dernier vendredi, à midi
+                                        0 0 12 1W * ?	Tous les mois, le jour de semaine le plus proche du 1er du mois, à midi
+                                        0 0 12 15W * ?	Tous les mois, le jour de la semaine le plus proche du 15 du mois, à midi
+                                        0 0 12 ? * 2#1 Chaque mois, le premier lundi du mois, à midi
+                                        0 0 12 ? * 6#1 Tous les mois, le premier vendredi du mois, à midi
+                                        0 0 12 ? * 2#2 Chaque mois, le deuxième lundi du mois, à midi
+                                        0 0 12 ? * 5#3 Chaque mois, le troisième jeudi du mois, à midi - 12 heures.
+                                        0 0 12 ? JAN * Tous les jours à midi en janvier uniquement
+                                        0 0 12 ? JUN * Tous les jours à midi en juin uniquement
+                                        0 0 12 ? JAN,JUN * Tous les jours à midi en janvier et en juin
+                                        0 0 12 ? DEC * Tous les jours à midi, uniquement en décembre
+                                        0 0 12 ? JAN,FEB,MAR,APR * Tous les jours à midi en janvier, février, mars et avril.
+                                        0 0 12 ? 9-12 * Tous les jours à midi entre septembre et décembre'
+
+
+                                -- 
+
+        -- Exercice 4 : Tronquer les tables dans une base de données
+
+                SEMANTIQUE : Tronquer une table c''est quoi ?
+
+                'TRONQUER (commande TRUNCATE) permet de supprimer toutes les données d’une table sans supprimer la table en elle-même. 
+                 En d’autres mots, cela permet de purger la table. Cette instruction diffère de la commande DROP qui à pour but de supprimer les données ainsi que la table qui les contient.'
+
+                Dans cet exercice, nous allons créer un script truncate qui :
+
+                        Se connecte au SGBDR mysql en utilisant les informations d''identification.
+
+                        Lister les tables en utilisant show tables et envoyer la sortie en utilisant l''opérateur pipe(|) à la commande suivante.
+
+                        Itère à travers chaque table en utilisant une boucle while et tronque la table.
+
+
+                1- Créer un nouveau fichier shell : -- truncate.sh
+
+                2- Copier ce code dans le fichier : 
+                                                        #!/bin/sh
+
+                                                        DATABASE=sakila
+
+                                                        mysql -Nse 'show tables' sakila | \
+                                                                while read table; do mysql --host=127.0.0.1 --port=3306 \
+                                                        -e "use sakila;SET FOREIGN_KEY_CHECKS=0;truncate table $table;SET FOREIGN_KEY_CHECKS=1;" ;done
+
+
+                3- Donner les permissions adéquates pour accéder au fichier : -- sudo chmod u+x+r truncate.sh
+
+
+                4- Exécuter le script pour tronquer les tables : -- sudo ./truncate.sh
+
+                5- Vérifier que les tabes ont bien été tronquées : -- mysql 
+                                                                   -- use sakila;
+                                                                   -- show tables;
+                                                                   -- select * from staff;
+                                                                   -- on voit que tout est vide
+
+
+                6- quitter l''éditeur avec : -- \q
+
+        -- Exercice 5 : Restaurer la base de données
+
+                Pour restaurer la base de données :
+
+                -- Vous récupérez un fichier zip compressé présent dans le dossier de sauvegarde et le décompressez pour extraire le fichier sql à l'aide de la commande gunzip.
+                -- Vous vous connectez à la base de données mysql et restaurez la base de données avec le fichier sql.
+
+                1- récupérer la liste des basckups créés : -- ls -l /home/theia/backups
+
+                2- sélectionner le plus récent et copier le nom du fichier -- 2022_11_01_backup.zip
+
+                3- décompresser le fichier : -- gunzip /home/theia/backups/2022_11_01_backup.zip
+
+                4- Restorer et remplir la base avec le ficher backup décompressé : -- mysql sakila < /home/theia/backups/2022_11_01_backup.sql
+
+                5- Regarder si tout s''est bien passé et que les tables sont remplies : -- mysql 
+                                                                                        -- use sakila;
+                                                                                        -- show tables;
+                                                                                        -- select * from staff;
+                                                                                        -- on voit que tout est rempli
+
+                6- Quitter avec la commande : -- \q
+
+                'Pour aller plus loin '
+
+                        A
+                -- Créez un script shell qui prend le nom de la base de données et le répertoire de sauvegarde comme paramètres et 
+                -- sauvegarde la base de données comme \_timestamp.sql dans le répertoire de sauvegarde. Si la base de données n'existe pas, 
+                -- il doit afficher un message approprié. Si le répertoire de sauvegarde n'existe pas, il doit en créer un.
+
+                                dbname=$(mysql -e "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$1'" | grep $1)
+
+                                if [ ! -d $2 ]; then 
+                                        mkdir $2
+                                fi
+
+                                if [ $1 == $dbname ]; then
+                                        sqlfile=$2/$1-$(date +%d-%m-%Y).sql
+                                        if mysqldump  $1 > $sqlfile ; then
+                                        echo 'Sql dump created'
+                                        else
+                                                echo 'Error creating backup!'
+                                        fi
+                                else
+                                        echo "Database doesn't exist"
+                                fi
+
+
+
+                        B
+                -- Ecrire un script shell qui prend le nom de la base de données et le fichier script comme paramètres et restaure la base de données à partir du fichier sql.
+
+                                if [ -f $2 ]; then 
+                                        dbname=$(mysql -e "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '$1'" | grep $1)
+                                        if [ $1 != $dbname ]; then
+                                                echo "Created DB as it didn't exist"
+                                                mysql -e "Create database $1"
+                                        fi
+                                        mysql -e "use $1"
+                                        mysql $1 < $2
+                                else
+                                        echo "File doesn't exist"
+                                fi
+
+
+
+                        C
+                -- Nettoyer le dossier de sauvegarde : 
+
+                sudo rm -rfv /home/theia/backups
+                                -- 
