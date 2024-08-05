@@ -1,0 +1,62 @@
+
+-- TD 2 : MySQL User Management, Access Control, and Encryption
+      
+        'Objectives'
+
+                Manage MySQL user accounts and roles : Gérer les utilisateurs et les rôles
+
+                Control access to MySQL databases and their objects : controler les accès aux bases et aux objets
+                
+                Add last line of defense to secure data using encryption : utiliser le cryptage de données
+
+
+
+                -- Exercise 1: Gérer les utilisateurs et les rôles
+
+                        Garder les Identifiants
+
+                        se rendre sur phpmyadmin 
+
+                        créer une nouvelle base de données 
+
+                        aller dans l'onglet' import et importer le code sql de création de la table
+
+                        Aller à l''accueil et dans l'onglet des comptes utilisateurs'
+
+                        Ajouter un utilisateur (lionel mdp) et renseigner les informations et privilèges auxquels il aura droit (cocher tous les provilèges pour un admin)
+
+
+
+                -- Exercise 2: Control access to MySQL databases and their objects
+
+                    Aller sur les comptes utilisateurs
+
+                    Editer les privilèges et spécifier les privilèges à donner 
+
+                    Aller sur base de données et choisir la base concernée
+
+                    dans l'onglet' table spécifier les privilèges par table (sélectionner les champs avec ctrl) et Exécuter
+
+
+
+                -- Exercise 3: Secure data using encryption
+
+                     Utiliser la console CLI 
+
+                     Créer une variable pour stocker une version cryptée du passphrase  (Une phrase secrète ou phrase de passe est un mot de passe d'un nombre important de caractères.'): 
+                     -- SET @key_str = SHA2('My secret passphrase', 512); 
+
+                     Se connecter à la base de données concernée -- USE world;
+
+                     Identifier la colonne avec les données sensibles 
+
+                     Convertir la donnée en binaire : utiliser la syntaxe -- ALTER TABLE NOM_TABLE MODIFY COLUMN NOM_COLONNE_SENSIBLE varbinary(255);
+
+                     utiliser une fonction de cryptage :ex avec AES AES (Advanced Encryption Standard) algorithm. C'est un cryptage symérique'
+                      -- UPDATE NOM_TABLE  SET NOM_COLONNE = AES_ENCRYPT(NOM_COLONNE_SENSIBLE , @key_str);
+
+                      -- FIN DU CRYPTAGE 
+                    
+                     Décrypter la data en utilisant AES_DECRYPT -- cast(AES_DECRYPT(NOM_COLONNE_SENSIBLE , @key_str) as char(255))
+
+                     'SELECT cast(AES_DECRYPT(Percentage, @key_str) as char(255)) FROM NOM_TABLE ;'
