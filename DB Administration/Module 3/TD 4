@@ -1,0 +1,207 @@
+
+
+-- TD 4 : Monitoring et optimisation dans une base de données PostgreSQL 
+
+   
+        'EXERCICE 1 : CREER LA BASE DE DONNEES'
+
+                -- télécharger les données avec le terminal
+
+                        wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/example-guided-project/flights_RUSSIA_small.sql
+                        
+                -- importer les données dans le CLI
+
+                       \i flights_RUSSIA_small.sql
+
+                -- lister les tables 
+                        
+                        \dt     
+
+                           --        List of relations
+                        Schema  |      Name       | Type  |  Owner   
+                        ----------+-----------------+-------+----------
+                        bookings | aircrafts_data  | table | postgres
+                        bookings | airports_data   | table | postgres
+                        bookings | boarding_passes | table | postgres
+                        bookings | bookings        | table | postgres
+                        bookings | flights         | table | postgres
+                        bookings | seats           | table | postgres
+                        bookings | ticket_flights  | table | postgres
+                        bookings | tickets         | table | postgres
+
+        'EXERCICE 2 : MONITORER LA BASE DE DONNEES'
+
+               Partie A: Monitorer l''activité courante
+
+
+
+                        -- Voir l'activité actuelle de la base de données
+
+                SELECT pid, usename, datname, state, state_change FROM pg_stat_activity; --pg_stat_activity c'est la table qui donne les infos sur les activités dans la base de données
+
+
+                                Column	                  Description
+                                pid	        -->       ID du process
+                                usename	        -->       Nom de l'utilisateur connecté
+                                datname	        -->       Nom de la base de données
+                                state	        -->       L'état actuel avec deux valeurs communes : active (exécutant une requête) et idle (en attente d'éxécuter une commande)
+                                state_change	-->       Moment ou le dernier etat a changé : par exemple de active à inactif ou d'une requête à une autre
+
+
+                        -- voir les requêtes exécutées
+
+                        SELECT pid, usename, datname, state, state_change, query FROM pg_stat_activity; -- ajouter query
+
+
+                        -- vois les sessions actives 
+
+                        SELECT pid, usename, datname, state, state_change, query FROM pg_stat_activity WHERE state = 'active';
+
+
+                        -- voir l'activité de la base de donnée
+
+                        SELECT datname, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database; 
+
+                                -- Résultat 
+
+                                 datname  | tup_inserted | tup_updated | tup_deleted 
+                                -----------+--------------+-------------+-------------
+                                          |            2 |           1 |           0
+                                postgres  |            0 |           0 |           0
+                                demo      |      2290162 |          22 |           0
+                                template1 |            0 |           0 |           0
+                                template0 |            0 |           0 |           0
+                                (5 rows)
+
+                                -- Explication 
+
+                                        Column	                  Description
+                                        datname	       -->        Nom de la base de données
+                                        tup_inserted   -->	  Nombre de lignes insérées par requêtes dans la base de donnéesNumber of rows inserted by queries in this database
+                                        tup_updated    -->        Number of rows updated by queries in this database
+                                        tup_deleted    -->        Number of rows deleted by queries in this database
+
+
+                Partie B: Monitorer la Performance dans le temps
+
+                        -- il faut installer l'extension pgstatstatements
+
+                        CREATE EXTENSION pg_stat_statements;
+
+                        -- ajouter l'extension aux fichiers de configuration 
+
+                        ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements'; -- il faut redémarrer le serveur de base de données après ça
+
+                        -- se connecter à la base demo
+                        
+                        \connect demo
+
+                        -- vérifier si la nouvelle extension a bien été chargée après le redémarrage
+
+                        \dx 
+
+                        show shared_preload_libraries; -- voir les extensions chargées
+
+                        --  activer le formatage de la table étendue
+
+                        \x 
+
+                       -- afficher les informations sur la requête exécutée
+
+                       SELECT dbid, query, total_exec_time FROM pg_stat_statements;
+
+                       -- supprimer l'extension
+
+                       DROP EXTENSION pg_stat_statements;
+
+
+                Partie C : Faire du monitoring avec PgAdmin
+
+                 -- Explication des différents graphiques qui sont visibles dans le tableau de bord
+
+                                        'Chart'	                        'Description'
+                                Server/Database sessions        -->    Affiche le nombre total de sessions en cours d'exécution. Pour les serveurs, ceci est similaire à pgstatactivity, et pour les bases de données, ceci est similaire à pgstatdatabase.
+                                Transactions per second	        -->    Affiche les commits, rollbacks, et transactions en cours.
+                                Tuples in	                -->    Affiche le nombre de tuples (lignes) qui ont été insérés, mis à jour et supprimés, de façon similaire aux colonnes tupinserted, tupupdated et tupdeleted de pgstat_database.
+                                Tuples out	                -->    Affiche le nombre de tuples (lignes) qui ont été récupérés (retournés en sortie) ou retournés (lus ou analysés). Ceci est similaire à tupfetched et tupreturned de pgstatdatabase.
+                                Server activity	                -->    Affiche les sessions, les verrous, les transactions préparées et la configuration du serveur. Dans l'onglet Sessions, il offre un aperçu de la répartition des sessions qui sont 
+                                                                --     actuellement actives sur le serveur, similaire à la vue fournie par pgstatactivity. Pour vérifier s'il y a de nouveaux processus, vous pouvez on peut actualiser
+
+
+                -- Voir le nombre de lignes qui seront affichées après la requête
+
+                EXPLAIN SELECT * FROM bookings;
+
+
+        'EXERCICE 3 : OPTIMISER LA BASE DE DONNEES'
+
+                -- importer les données dans pg admin      
+
+                        \i 'C:/Users/LTodome/Downloads/flights_RUSSIA_small.sql' -- il faut faire gaffe aux << / >> au lieu de << \ >> et aux <<''>> au lieu de <<" ">>
+
+
+                -- se connecter à la base de données
+
+                        \connect demo
+
+                -- lister les tables 
+
+                        \dt
+
+                -- sélectionner toutes les entités de la table aircrafts_data;
+
+                        SELECT * FROM aircrafts_data;
+
+                -- optimiser les types de données
+
+                        si aircraft_code a 3 caractères maxi ---> passer de varchar à char(3)
+
+                                'exemple de syntaxe' : ALTER TABLE aircrafts_data ALTER COLUMN range TYPE smallint;
+
+
+                        si model est un json ---> passer de varchar à json
+
+                        si range a une valeur entre 1000 et 12000  ---> passer de integer à smallint (valeurs allant de -32,768 à 32,767) mais ça marche pas ici car la colonne est utilisée par une vue donc il faut drop et recréer la vue
+
+                        
+                        -- supprimer la vue
+
+                                DROP VIEW aircrafts;              -- garder le code  pour le réutiliser
+
+                        -- modifier le type de colonnes 
+
+                                ALTER TABLE aircrafts_data ALTER COLUMN range TYPE smallint;
+
+                        -- créer la vue
+
+                                CREATE VIEW aircrafts as SELECT ad.aircraft_code, ad.model, ad.range   FROM airports_data ad;
+
+                -- regarder les types de données et d'autres infos complémentaires comme les index, les contraintes et les références
+
+                        \d aircrafts_data
+
+
+                -- Nettoyer les bases de données avec la fonction VACUUM
+
+                                -- vérifier si le nettoyage automatique est activé 
+                                       
+                                        show autovacuum; -- résultat : ON
+
+                                -- Regarder la dernière fois où le nettoyage automatique a été lancé
+
+                                        SELECT relname, n_dead_tup, last_autoanalyze, autovacuum_count FROM pg_stat_user_tables;
+
+
+                               '     relname     | n_dead_tup |       last_autoanalyze        | autovacuum_count
+                                -----------------+------------+-------------------------------+------------------
+                                airports_data   |          0 | 2022-10-14 16:57:11.558641+02 |                0
+                                aircrafts_data  |          0 |                               |                0
+                                ticket_flights  |          0 | 2022-10-14 16:58:22.039064+02 |                1
+                                tickets         |          0 | 2022-10-14 16:57:24.943978+02 |                1
+                                flights         |          0 | 2022-10-14 16:57:13.172748+02 |                1
+                                boarding_passes |          0 | 2022-10-14 16:58:29.834929+02 |                1
+                                bookings        |          0 | 2022-10-14 16:57:12.138073+02 |                1
+                                seats           |          0 | 2022-10-14 16:57:13.196209+02 |                1
+                                (8 lignes)'
+
+                                -- 
