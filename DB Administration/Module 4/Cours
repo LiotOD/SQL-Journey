@@ -230,6 +230,155 @@
 
                 3- Error log : infos sur le diagnostic des messages de la base de données
 
+
+
+-- Cours 4 : Généralités sur l'automatisation des tâches pour les bases de données
+
+                'Automatisation en base de données c"est quoi ?'
+
+        Automatiser c''est utiliser des procédures mises à jour automatiquement pour réaliser des tâches d'amdinistration'  de manière ponctuelle et régulière en définissant une fréquence.
+
+        Automatiser c''est aussi réutiliser les scripts pour faire les mêmes tâches au lieu de les lancer manuellement à chaque fois.
+
+
+                'Quelles tâches automatiser en base de données ?'
+
+        Par exemple : 
+                        - Faire les Backup (sauvegarde de données)
+                        - Supprimer les logs d''évènements quand ils sont nombreux
+                        - Monitorer la performance du système
+                        - Editer le registre des actions
+                        - Gérer les utilisateurs
+                        - Tâches réseau
+                        - Tester les fichier de configuration : s'arrurer que la configuration actuelle est toujours en accord avec les recommandations'
+                        - Tester le schema objet : 
+                        - Tâches de routine
+                        - Tester la santé de la base de données 
+                        - Log d''alerte pour supprimer des fichier : quand il y a trop de log et que ça pèse sur la mémoire
+                        - Suppression des trace file : supprimer les trace file ou les fichiers de backup
+                        - Data dictionnary statistics : métadonnées, historique de recherche, etc
+                        - etc.
+
+        
+
+                'Outils et méthodes pour automatiser les tâches'
+
+        Il y a des outils intégrés dans la console d'administration', des scripts déjà présents dans la base de données et, des outils crés par des développeurs
+
+        Scripts d''automatisation les plus courant sont : --> backup, truncate, loas, restore
+
+        Quand on fait des mises  jour régulières il est important de garder un système de versionning.
+
+        Les bases de données fonctionnent au top lorsqu''elles sont dans un environnement de controle de version
+
+                'Quels scripts d"automatisation le DBA peut créer ?'
+
+        par exemple script qui :
+                        - envoie des erreurs de notifications 
+                        - déplacer les logs archivés d''un dossier à un autre
+                        - programmer des rapports et leur envoi automatique
+                        - est utile pour les changements de code dans le déploiement de bases de données
+                        - etc.
+
+        
+                'Quels outils sont utilisés pour automatiser ?'
+
+        - Cron jobs : tâche exécutée automatiquement dans un système d’exploitation à partir d'une commande'.
+
+        - Script Shell, Python, batch, autres languages
+
+        - Planificateur de tâches windows
+
+
+                'Avantages de l"automatisation des tâches'
+
+        - Augmenter la robustesse et la prductivité du système
+
+        - Augmenter la qualité
+
+        - Améliorer la robustesse d''un process
+
+        - Libérer de la capacité pour le système
+
+        - Se dégager du temps pour faire d''autres choses
+
+
+                'Automatiser les tests sur une base de données'
+
+        L''objectif est de s''assurer que les infos sur la base de données sont correctes et que tout fonctionne normalement
+
+       Il est important de tester et de manière régulière la base de données car on s''assure là que les données sont cohérentes et ne compromeettent pas le fonctionnement de la base
+
+        Avantages :
+                        - Prévenir la perte de données
+                        - Enregistrer les transactions avortées sur la donnéesNumber
+                        - Empêcher les accès non authorisés
+                        - Regarder l'intégrité et la constance ' de la donnée
+
+        Les tâches automatisées sont plus fiables, utilisent moins de ressources et sont plus rapides
+
+
+
+-- Cours 5 : Automatiser les rapports et les alertes
+
+        --     1. Les rapports 
+        
+                'Etat de santé de la base de données' : Ils contiennent des informations sur les utilisateurs, les connexions réussies ou échouées, les requetes exécutées, espace utilisé, dernières opérations réussies, etc.
+
+                On peut personaliser le rapport d''erreur afin qu''il contienne les informations 
+
+                En obtenant des rapports réguliers, on peut identifier à l''avance des éventuels problèmes.On a des statistiques à analyser et prévoir les futures évolutions
+
+                -------------------------
+
+                Le rapport peut envoyer une notification au DBA si dans l''analyse, il découvre une éventuelle source de problème
+
+                Exemple : le DBA reçoit une notification quand il y a plusieurs tentatives infructueuses pour se connecter à une base de données
+
+                                Soit c'est un utilisateur qui a oublié son mot de passe soit c"est une tentative d"intrusion dans le système'
+
+                                La notification peut se faire par sms, par mail ou par Dashboard
+
+
+        --    2. Les alertes
+
+                Les alertes sont là quand il y a des urgences. c'est un peu comme quand on appelle le SAMU'
+
+                Elles sont envoyées quand le système fait face à un problème sérieux :
+
+                                - niveau très bas de mémoire
+                                - niveau très bas de disque dur
+                                - Tâches échouées 
+                                - Log d''erreur
+
+                Il faut planifier les alertes de manière à ce qu''elles ne soient pas excessives. Il faut spécifier les cas d''urgence.
+
+                'Il faut définir des seuils de sévérité pour les alertes : un peu comme des émojis ou des panneaux vert orange rouge'
+
+                        - Warning/Avertissement : il faut faire attention à ça
+
+                        - Seuil critique : il faut tout arrêter pour se concentrer à cette tâche.
+
+
+
+                'Quelques exemples de seuils de sévérité'
+
+                        - Alerte d''avertissement : quand la capacité de stockage atteint 85%
+
+                        - Alerte critique : quand la capacité de stockage atteint 95%
+                
+
+        -- 3. Comment automatiser les rapports et les alertes
+
+                - Utiliser les interfaces graphiques du SGDB
+
+                - Les lignes de commandes
+
+                - Un script 
+
+                - Utiliser un modèle de rapport fournit automatiquement par le SGDB
+
+                - Configurer et personnaliser les rapports
                 NB : l'error log' de Mysql fournit également des infos d'avertissement et de notes' pendant le démarrage, l'arrêt' du server et les autres opérations de la base de données
 
                 Le log d'erreur' de mysql peut être configuré pour écrire dans le log du système d''exploitation.
