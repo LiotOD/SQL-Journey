@@ -1,0 +1,34 @@
+
+-- TD 1 : Améliorer les performances des requêtes lentes dans MySQL
+
+        Des fois quand on lance des requêtes on se rend compte qu''elles sont plus longues que d''autres. Ce qui peut en être la cause c'est':
+
+                1* la taille de la base de données : plus c''est grand, plus longue sera les recherches ce qui est normal 
+
+                2* les requêtes non optimisées (pas d''index ou des jointures inutiles ou le manque de spécification des colonnes à utiliser dans la jointure)
+
+
+
+        'COMMENT FAIRE POUR SAVOIR SI UNE REQUETE EST PERFORMANTE OU NON ?'
+
+        Il faut utiliser la commande EXPLAIN : --Avec EXPLAIN, on vérifie si la requête extrait plus d'informations que nécessaire, ce qui entraîne un ralentissement des performances dû à la manipulation de grandes quantités de données.
+
+        EXPLAIN fonctionne sur des requêtes de type : SELECT, DELETE, INSERT, REPLACE et UPDATE
+
+                exemple : -- EXPLAIN SELECT * FROM NOM_TABLE
+
+        En réponse on voit le nombre de lignes que ça va sortir et certaines informations supplémentaires
+
+       
+        'SI ON SE REND COMPTE QUE LA REQUETE N"EST PAS PERFORMANTE, QUE FAIS-T-ON POUR AUGMENTER LA PERFORMANCE ?'
+
+                On peut régler le souci en faisant :
+                
+                        1* un index sur la colonne clé primaire de la table concernée;
+
+                        2* une spécification sur les colonnes à afficher -- ex: un select col1, col2 * from table1 au lieu de select * from table1
+
+                        3* éviter les wildcards (recherches avec like "%info")
+                
+                        4* utiliser la clause UNION ALL : quand on utilise l''opérateur OR avec des instructions LIKE, une clause UNION ALL peut améliorer 
+                                                                la vitesse de votre requête, surtout si les colonnes situées de part et d''autre de l''opérateur sont indexées.
