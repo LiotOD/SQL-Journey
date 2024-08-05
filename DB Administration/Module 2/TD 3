@@ -1,0 +1,66 @@
+
+--TD 3 : User Management and Access Control in PostgreSQL
+        1. LECTURE 
+             
+                'CREER UN ROLE DE LECTURE'
+
+                        CREATE ROLE read_only; -- create role nom_role
+
+                'DONNER DES PRIVILEGES DE CONNECTION A LA BD DEMO'
+
+                        GRANT CONNECT ON DATABASE demo TO read_only;  -- grant connect on database nom_base to nom_role
+                
+                'GARANTIR L''UTILISATION DU SCHEMA SUR LEQUEL LA BASE EST STOCKEE'
+
+                        GRANT USAGE ON SCHEMA bookings TO read_only; --grant usage on nom_schema to nom_role
+
+                'GARANTIR LE PRIVILEGE DE SELECTION SUR TOUTES LES TABLES DU SCHEMA BOOKINGS'
+
+                        GRANT SELECT ON ALL TABLES IN BOOKINGS TO read_only; --grant privilege on table/ all tables in nom_schema to nom_role
+
+
+        2. ECRITURE
+
+                'CREER UN ROLE D''ECRITURE'
+
+                        CREATE ROLE read_write; --create role nom_role
+
+                'DONNER DES PRIVILEGES DE CONNECTION A LA BD DEMO'
+                
+                        GRANT CONNECT ON DATABASE demo TO read_write;  --grant connect on database nom_base to nom_role
+
+                'GARANTIR L''UTILISATION DU SCHEMA SUR LEQUEL LA BASE EST STOCKEE'
+
+                        GRANT USAGE ON SCHEMA bookings TO read_write; --grant usage on nom_schema to nom_role
+                
+                'GARANTIR LES PRIVILEGES DE SELECTION, INSERTION, SUPPRESSION, MAJ SUR TOUTES LES TABLES DU SCHEMA BOOKINGS'
+
+                        GRANT SELECT, INSERT, DELETE, UPDATE ON ALL TABLES IN SCHEMA BOOKINGS TO read_write;-- GRANT PRIVILEGE1, PRIVILEGE2, PRIVILEGE3 on table_spec/alltables in nom_schema to nom_role
+
+
+
+        3. Ajouter un nouvel utilisateur et lui affecter le role correspondant
+
+
+                'CREER UN UTILISATEUR AVEC UN MOT DE PASSE'
+
+                        CREATE USER user_a WITH PASSWORD 'user_a_password'; -- create user nom_user with password 'mot de passe'
+
+
+                'ASSIGNER UN ROLE A L_UTILISATEUR'
+
+                        GRANT read_only to user_a; --grant role to user
+
+                'LISTER TOUS LES ROLES ET UTILISATEURS'
+
+                        \du
+
+        4. Retirer des droits de connexion à un utilisateur
+
+                'L_USER AVAIT LES DROITS DE LECTURE SUR TOUTES LES TABLES DE LA BASE DEMO. ON NE VEUT PAS LUI PERMETTRE DE LIRE LES DONNEES DE LA TABLE AIRCRAFTS_DATA'
+
+                        REVOKE SELECT ON aircrafts_data FROM user_a; -- revoke privilege on table from user
+
+                'L_USER A CHANGE DE SERVICE ET IL NE DOIT PLUS AVOIR ACCES A LA BD DEMO'
+
+                        REVOKE read_only from user_a; -- revoke role from user
