@@ -1,0 +1,157 @@
+--------------------------------------------------------------------------------------------
+                                        -- MODULE 2 --
+--------------------------------------------------------------------------------------------
+
+
+'Learning Objectives'
+
+    Explain the difference between physical and logical backups.
+    Describe the advantages and disadvantages of different types of database backup.
+    Explain the difference between hot and cold backups.
+    Describe an appropriate backup policy.
+    Describe database transaction logs.
+    Describe different levels of database security.
+    Describe users, groups, and roles.
+    Grant and deny access to objects in a database.
+    Explain why auditing is important.
+    Describe how to audit database access.
+    Explain the advantages of encrypting data.
+
+
+-- Cours 1 : Introduction to Backup and Restore
+
+        Principe du backup : -- Sauvegarder une copie de la base de données pour des raisons de protection
+        Principe du restore : -- Restaurer une donnée après une perte de données
+
+        Ces deux process peuvent être utiles lors des : --migrations, changements de SGBD, partage de données, utilisation de la sauvegarde pour le dev ou des tests sur des outils 
+
+        Il existe deux type de backup :
+
+        Back-up Logique : -- crée un fichier contenant des commandes DDL (create par ex) et des DML (insert par ex) nécessaires pour recréer la base de données 
+                        -- peut prendre du temps et de la mémoire RAM, le mieux c'est de le lancer quand le système n'est pas en période de forte demande 
+                        -- backup des objets ganular (bases de données individuelles, des tables, tous les détails)
+
+                                                        '---------------Granular data ------------------------- '              
+                                                        --Les données granulaires sont des données détaillées ou le niveau le plus bas auquel les données peuvent se trouver dans un ensemble cible.
+                                                -- Il fait référence à la taille dans laquelle les champs de données sont divisés, en bref à quel point un champ est orienté vers les détails.
+                                                        --Un bon exemple de granularité des données est la façon dont un champ de nom est subdivisé, s''il est contenu dans un seul champ ou
+                                                -- subdivisé en ses constituants tels que le prénom, le deuxième prénom et le nom de famille.
+                                                -- Au fur et à mesure que les données deviennent plus subdivisées et spécifiques, elles sont également considérées comme plus granulaires.
+                                                        '------------------------------------------------------ '              
+
+
+        Backup Physique : -- Faire une copie réelle des données (tous les fichers de stockage et les répertoires, les fichiers de configuration, les données, et tout ce qui concerne la base de données en question)
+                        -- Moins lourds et plus rapide à mettre en place
+                        -- Moins de granularité (pas vraiment de prise en compte de chaque spécificité des objets de la base de données)
+                        -- Le backup physique ne peut être restauré que dans un SGDB similaire. 
+
+
+        Le physique crée une copie de la donnée et le logique fait une extration de la donnée
+
+
+        Que faut-il backup ?
+
+        On peut backup  : - - les bases de données, schema, tables, parties de données, autres objets de la base de données
+        On peut choisir la fréquence et le type de backup à réaliser
+
+        'Considérations importantes'
+
+                - Vérifier que le fichier de backup est valide
+                - Vérifier que la plan de restauration fonction ( plan d''urgence de de continuité d''activité)
+                - S'assurer ' de la sécurité des backup et de la localisation des backups. Niveau de sécurité idem que celui de la base de données en prod (peut-être pas sur le même serveur) 
+                - Si possible, réduire la taille du stokage et de la transmission
+                - Si possible encrypter le backup pour augmenter le niveau de sécurité des sauvegardes
+                
+
+
+
+-- Cours 2 : Types de backup
+
+        
+        'Full backup' : -- copie entière de toute la base de données spécifiée
+        'Point in time backup' : -- en utilisant le log, on peut récupérer la donnée à un moment précis par exemple avant une suppression de données
+        'Differential backup' : --copie de toutes les données ayant été modifiées depuis le dernier backup complet.
+        'Incremental backup' : -- idem que backup différentiel mais agit peu importe le type du dernier backup. 
+                                --Il backup les modifications de chaque jour!
+
+
+        On peut faire un backup complet une fois par semaine, et faire un backup différentiel chaque jour (--ces backups contienent uniquement 
+       -- les modifications de la base énregistrées chaque jour depuis la sauvegarde complète. Si le backup complet a été fait dimanche,
+       -- Le backup différentiel du mardi contient les modifications du Lundi + Mardi 
+        )
+
+
+-- Cours 3 : Règles et procédures de backup
+
+        Hot backup et cold backup
+
+        'Hot Backup ou online backup' : quand le backup est fait alors que la donnée est en cours d''utilisation
+        -- générallement stocké sur un serveur e, service et reçoit les miss à jour directement depuis le serveur de base de données en prod
+        cela permet d''assurer une contuité du service en cas de problèmes sur le serveur de prod
+
+        -- avantage : peut se faire sans arrêter le service et le travail des utilisateurs
+        -- inconvenient : données les plus récemment mises à jour pendant le processus ne seront peut-être pas pris en compte
+
+
+        'Cold backup ou offline backup' : quand le backup est fait alors que le service est arrêté
+        -- généralement stockée sur un serveur ou disque externe
+                cela offre plus de sécurité à la sauvegarde de données mais le processus de restauration peut être long
+
+
+        -- avantage : on est sur de ne pas perdre la donnée lors du backup
+        -- inconvenient : ne peut pas être utilisé dans un environnement de prod h24
+
+
+
+'----------------------COMMENT DEFINIR SA POLITIQUE DE BACKUP---------------------'
+
+
+        -- Il faut prendre en considération les points suivants :
+
+                1- Mode de backup : Physique ou logique
+                2- Type de backup : Full, Differential ou Incremental
+                3- Forme de backup : Cold ou Hot
+                4- Compression : oui ou non
+                5- Cryptage : oui ou non 
+                6- Fréquence de backup : choisir la durée entre chaque backup
+                7- Quand faire le backup : choisir le moment de la journée pour faire le backup
+                8- Automatiser le backup : choisir un moyen de réaliser le backup de manière automatisée et sécurisée
+
+        -- Note pour les backup sur le cloud
+        soit utiliser les backup automatiques préconfigurés, configurer moi-même un backup automatique, faire les backups manuels, soit utiliser des outils tierces de backup de données  
+
+
+
+
+-- Cours 4 : utiliser les logs de transaction de base de données pour la restauration
+
+        'Généralités'
+        Le log de transaction permet de garder une trace de toutes les opérations qui sont passées dans la base de données
+        En cas d'urgence' (suppression, virus, bug etc), le log de transaction et un backup de la base de données peut servir pour restaurer la base de données à un moment bien précis ou à comprendre ce qui s'est passé' juste avant l'erreur'
+
+        'Principe du Roll forward Recovery'
+
+        -- 1- Backup
+        -- 2- Logs de Transactions enregistrés automatiquement
+        -- 3- Problème de base de données
+        -- 4- Restaurer la base de données
+        -- 5- Utiliser le fichier de transaction pour récupérer les données perdues entre le 1 et le 3
+
+        Stockage du fichier log de transaction
+
+        -- Spécifié avec le fichier de configuration de la base de données
+        -- par défaut il est stocké dans : sqlogdir(Db2), pg_xlog(PostgreSQL)
+
+        NB: Il est recommandé d''isoler les fichiers logs du serveur où la base est stockée (afin de pouvoir y accéder en cas d'attaque)'
+                C'est' également utile pour séparer les logs de la base de données des logs de transaction (performance du système car les deux n'écrivent pas au même moment sur le même serveur')
+
+                le log de transaction est le plus souvent en format binaire avec un Cryptage. (mysqlbinlog/MySQL), (db2fmtlog/Db2), 
+                cela peut nécessiter des outils pour analyser et afficher le contenu
+
+        'Anatomie du log de transaction'
+
+                - ID de transaction
+                - Type d''enregistrement dans la base de données
+                - Numéro de séquence actuelle de log
+                - Numéro de la précédente séquence de log
+                - l''information qui a changé
