@@ -155,3 +155,152 @@
                 - Numéro de séquence actuelle de log
                 - Numéro de la précédente séquence de log
                 - l''information qui a changé
+
+
+-- Cours 5 : Généralités sur la sécurité des bases de données
+
+                Il faut identifier les différents risques et les vulnérabilités pour le système de bases de données. Il faut regarder les points suivants :
+
+        1- S''assurer de la sécurité des serveurs sur lesquls les bases de données sont stockées (si c''est physique alors regarder comment c'est sécurisé' et si c'est cloud' alors voir avec le fournisseur de service)
+
+        2- Regarder le système d'exploitation' sur les serveurs et s''assurer que les derniers patchs et les updates sont faits. Nombre réduit d''administrateurs (authentification et premissions et auth2a, LDAP, privilèges sur la base etc)
+
+        3- Utiliser le principe du plus petir privilège : lorsque plusieurs droits se superposent, les utilisateurs ne doivent accéder qu''à la plus faible quantité de données possible.
+
+        4- Réaliser un audit régulier : qui a accès aux bases, qu''est-ce qu''ils font etc, ensuite regarder s''il n''y a pas des failles dans les protocoles de sécurité.
+
+        5- Considérer l'utilisation du cryptage' c'est pour ajouter une nouvelle couche de sécutité' au système. En fonction des règles du marché, certaines données peuvent être concernées par des obligations de cryptage
+
+        6- Dans tous les cas, le plus robuste système de gestion des bases de données peut être compromis par des injections SQL et du mauvais code exécuté.
+
+
+
+-- Cours 6 : Roles, groupes et privilèges
+
+
+        1- Un utilisateur est un compte qui peut accéder à la base de données et aux objets de la base de données selon la spécification
+
+        2- On peut utiliser les groupes d'utilisateurs' pour regrouper les utilisateurs ayant les mêmes droits logiques 
+
+        3- Si c'est le cloud par exemple celui d'Amazon on peut utiliser un VPC security group et db security groups pour configurer les accès aux groupes
+
+        4- Les bd roles sont similaires aux groupes. De manière plus détaillée c'est' -- un ensemble de permissions necessaires pour effectuer des opérations spécifiques dans la base de données
+                Exemple du role backup operator ---> ça veut dire qu'il pourra accéder à toutes les fonctionnalités relatives à l'exécutions des tâches de sauvegardes sur la base de données
+                Dans certains cas les SGBD ont des roles prédefinis. On peut créer nos propres roles et spécifier les tables et fonctions auxquels les users sous ce rôle auront accès
+
+        5- Accorder des privilèges à des rôles ou des utilisateurs permet de ne pas se tromper dans les droits accordés et c'est plus facile d'ajouter de nouvelles permissions à un groupe plutôt qu'à chaque utilisateur'
+
+        6- Un utilisateur peut fare partie de plusieurs groupes ou roles (dans ce cas il faut utiliser le principe du plus petit privilège)
+
+        7- Il faut créer autant de rôles que necessaires afin de ne pas donner des privilèges à un utilisateurs qui ne doit pas y accéder normalement
+
+
+-- Cours 7 : Gestion des accès aux bases de données et à leurs objets
+
+        1- Les privilèges sont définis pour les groupes ou le sutilisateurs
+
+        2- Un utilisateur bénéficie des privilèges qui lui sont définis et des privilèges des groupes auxquels il appartient.
+
+        3- On peut utiliser les fonctionnalités de GRANT CONNECT TO NOM_GROUP/NOM_USER pour permettre les connexions 
+
+        4- Dans certains cas, les SGBD donnent les accès de connexion pour le compte public à toutes les tables d'une base de donnée.' Il est judicieux dans ce cas de révoquer ces permissions de connexion
+                Ainsi, on est sur que les utilisateurs qui consultent la donnée sont uniquement ceux qui ont les privilèges de connexion
+
+        5- On peut utiliser les fonctionnalités de GRANT SELECT ON NOM_TABLE TO NOM_GROUP/NOM_USER pour permettre aux utilisateurs de sélectionner les donner sur la Table spécifiée
+
+        6- On peut répéter les opérations sur les fonctionnalités de INSERT, UPDATE, GRANT sur la table spécifié
+
+        7- On peut utiliser la fonctionalité GRANT CREATE TABLE TO NOM_GROUP/NOM_USER pour que l'utilisateur' puisse créer de nouveaux objets (tables, procédures, fonctions) 
+
+        8- On peut garantir les vues au code à un utilisateur avec GRANT VIEW ON NOM_FONC/NOM_PROCEDURE TO NOM_GROUP/NOM_USER. ça veut dire qu''e l''utilisateur pourra voir le code mais il ne pourra ni le lancer ni le modifier
+
+        9- On peut refuser les permissions obsolètes en utilisant DENY PERMISSION ON NOM_TABLE TO NOM_GROUP/NOM_USER
+
+
+
+-- Cours 8 : Faire un audit des activités de la base de données
+
+        Il s'agit d'un aspect important du plan de sécurité de votre gestion de base de données.
+
+        L''audit ne donne pas une protection directe mais elle permet d''identifier les failles et erreurs : c'est comme un bilan de santé chez le medecin'
+
+        Parfois l''audit est obligatoire sur certaines données très sensibles . L'audit peut être réalisé en dur ou sur le cloud'
+
+        Audit = Historique des accès + Historique des activités dans la base de données
+
+        L''audit permet d'identifier les activités suspectes', répondre rapidement à des menaces
+
+        Si un utilisateur non autorsé accède à des données alors il est plus rapidement identifié .
+
+        En utilisant le rapport d'activité', on peut également savoir qui a essayé sans succès d'accéder' à la base de données 
+
+        Pour faire un audit, on peut utiliser les triggers
+
+        pgAudit, Db2 on cloud
+
+
+
+-- Cours 9 : Crypter la donnée
+
+        Il s''agit de la dernière couche de sécurité sur la donnée. Lorsqu'il y a fuite,' l''auteur aura des données mais il devra les décrypter
+
+        ça protège la donnée lors de la transmission ou le stockage. Elle peut être une demande de l'entreprise, des normes du secteur, des besoins des clients (ex : données bancaires)'
+
+        Certains SGDB utilisent par défaut le TDE (Transparent Data Encryption) pour toute la base de données, d''autres proposent des cryptages pour les tables ou objets individuellement, et d'autres' des cryptages de colonnes
+
+        Il faut garder les cryptages pour les données qui le nécessitent, sinon on rend le système plus complexe et moins performant
+
+        -- Le principe du cryptage c'est : DATA + ALGORITHM DE CRYPTAGE = DATA CRYPTEE OU CIPHERTEXT (donnée utilisable uniquement si la personne possède également la clé de cryptage)
+
+        ' Il existe deux types de cryptage : cryptage symétrique et cryptage asymétrique'
+
+        -- CRYPTAGE SYMETRIQUE
+
+        Utiliser la même clé pour crypter et décrypter la donnée (AES, DES)
+
+        La clé est partagée avec tous les utilisateurs, ce qui peut augmenter les risques de compromissions.
+
+        Si une personne se fait voler sa clé alors c'est' tout le système qui est corrompu
+
+        -- CRYPTAGE ASYMETRIQUE
+
+        Utilisation de deux clés : une publique et l'autre' privée
+
+        La clé publique fait le cryptage et la clé privée fait le décryptage. (ex : RSA, ECC)
+
+        -- CRYPTAGE TRANSPARENT DE DONNEES
+
+        les données de cryptage ne sont pas visibles par les users.
+
+        La base de donnée crypte la donnée avant de la stocker. Elle crypte aussi la savegarde 
+
+        -- CLES CLIENTS GERES
+
+        Donne plus de contrôles au propriétaire des données
+
+        le fournisseur cloud se charge du cryptage et l'administrateur' securité se charge de la gestion des clés.
+
+        avantages : le fournisseur cloud ne peut pas accéder à vos données confidentielles
+                le security admin gère les clés et l'admin base de données' s''occupe des données
+
+        -- Paramètres à regarder quand on considère le cryptage
+
+        1- Choix du type de cryptage : symétrique ou asymétrique
+
+        2- Temps et compétences nécessaire pour le cryptage
+
+        3- Les algorithmes asymétrique ont un impact sur la performance du système car les clés sont longues
+
+        4- Les algorithmes symétriques conviennent le plus souvent pour les secteurs généraux
+
+        -- Protéger la donnée lors du transfert
+
+        Souvent fournis par le SGBD
+
+        Utilisation des protocoles TLS ou SSL 
+
+        Cryptage par défaut dans certains cas
+
+        Dans tous les cas qui dit cryptage dit aussi impact sur la performance du SGBD
+
+
