@@ -1,0 +1,236 @@
+                                
+--------------------------------------------------------------------------------------------
+                                        -- MODULE 4 --
+--------------------------------------------------------------------------------------------
+
+'Learning Objectives'
+        Describe basic troubleshooting and solutions for common issues.
+        Describe diagnostic logs and their purpose.
+        Identify what database automated tasks are and some of the specific tasks.
+        Describe how DBAs use reports, notifications, and alerts.
+
+
+-- Cours 1 : Dépannage des problèmes courants
+
+        Le dépannage est : le processus pour identifier un problème et le régler. On commence par les questions suivantes :
+
+               '1* Quels sont les symptômes
+                2* Où est localisé le problème
+                3* Quand se produit le problème?
+                4* Dans quelles sonditions se produit le problème
+                5* Le problème va-t-il se répéter'
+
+        'Quels sont les problèmes les plus courants dans une base de données'
+
+                1* Mauvaise Performance : lenteur dans les procédures et requêtes
+
+                2* Mauvaise configuration : une mauvaise configuration du serveur, du client ou de la base de données
+
+                3* Mauvaise connectivité : connection lente, temps de latence, réseau non optimal, plus de mémoire disque, CPU surchagé etc.
+
+                        -- Vertical scaling : Augmenter les capacités disk, mémoire, puissance sur le serveur
+                        -- Horizontal scaling : Ajouter des partitions de base de données et faire un fractionnement des données pour augmenter la performance
+
+                                        Shards : Le shard est un concept anglosaxon qui consiste à séparer les données pour mieux les exploiter.
+                                                        Concrètement, au lieu de travailler avec une base de données très volumineuse, il s’agit de la découper, de la saucissonner, de la partitionner… 
+                                                        afin de pouvoir travailler sur des portions de taille réduite permettant des résultats, certes partiels, mais plus rapides.
+
+
+                                                'Horizontal Sharding (sharding pattern)' : prendre la base de données et la répartir sur plusieurs serveurs mais en conservant toutes les tables. 
+                                                                                        Dans cette configuration, chaque serveur aura une vue globale de la base mais n’aura pas toutes les données ;
+
+                                                                                        On peut définir une limite de données à ne pas dépasser par tables (100.000 lignes) et si on atteint ce quota 
+                                                                                        alors on écris le reste des données dans une base identique située sur un autre server en partant de la 100.001 ème ligne
+
+
+                                                'Vertical Sharding' : l’idée est ici de répartir les tables entre plusieurs serveurs. Par exemple, la table des commandes et des factures d’un côté et la table des produits et des clients de l’autre. 
+                                                                                        Ou encore, un serveur par région du monde… Chaque serveur aura accès à des tables dans leur intégralité mais n’aura pas accès à la base dans son ensemble.
+
+                                                                                        La table est comme un bac à fruits et on mets les fruits de chaque couleur ou de différentes propriétés nutritives dans un server différent
+
+                4* Requêtes incohérentes et pplications illogiques : bloquer des objets de la base de données
+
+
+        'QUELS SONT LES SYMPTÔMES DE CES PROBLEMES'
+
+                1* Un utilisateur ne peux pas se connecter à la ase de données
+
+                2* Timeout et erreurs réccurentes
+
+                3* Nombre limite de personnes pourvant se connecter simultanément au serveur de base de données
+
+                4* Les prolèmes chez le client : login, mdp, pas de vpn allumé, bon driver etc
+
+        
+        'A : COMMENT REGLER LES PROBLEMES DE PERFORMANCE ET DE CONFIGURATION SUR LE SERVER'
+
+                1* 'Coté configuration' :       ajouter la mémoire, la ram, CPU, 
+
+                                                penser à défragmenter le disque dur, 
+                                                
+                                                mettre les tables qui sont souvent requêtées dans le disque le plus rapide
+                                                
+                                                faire les mises à jour du OS et du SGDB
+
+
+
+                2* 'En fonction de l''évolution du système' :   augmenter le nombre de connexion simultanées authorisées
+
+                                                                changer le buffering (tampon) de la base de données : --  Un tampon de base de données est une zone de stockage temporaire dans la mémoire principale. Elle permet de stocker 
+                                                                                                                      --  temporairement les données lors du passage d'un endroit à un autre.
+
+                                                                utiliser les index 
+
+
+
+        'B : COMMENT REGLER LES PROBLEMES DE CONNECTIVITE'
+
+                   1* Vérifier le serveur est lancé et fonctionne
+
+                   2* Vérifier que l''instance de la base de donnée sur le serveur est lancé et fonctionne (par exemple sur Netgeo est-ce que la base est déconnectée)
+
+                   3* Vérifier que la base de données peut-être accessible par le client (utilisateur) : on peut utiliser une commande PING
+                                                                                                         ex : cmd --> PING ADRESSE IP_SERVER
+                   4* Vérifier que le driver (pilote) de connection au server est bien configuré 
+                      
+                   5* Vérifier que les id de connetion, l''adresse du server, le protocole, le cryptage si nécessaire est correctement
+
+
+
+        'C : QUELS SONT LES OUTILS DE DEPANNAGE ?'
+
+                1* Outils de monitoring 
+
+                2* Tableaux de bord et les reporting
+
+                3* Logs server, base de données et clients
+
+        
+-- Cours 2 : Utilisation des variables d'état, des codes d'erreur et de la documentation
+
+
+                        'COMMENT RECUPERER LES INFORMATIONS QUI SERVENT A FAIRE UN DIAGNOSTIC SUR LES BASES DE DONNEES'
+
+
+                1* Trouver les informations sur l'état du server' : via lignes de commandes ou interfaces graphiques
+
+                                exemple : SHOW STATUS -- Mysql
+                                        : db2pd -- DB2
+                                        : pg_isready -- PostgreSQL
+
+                2* Utiliser les variables d'état': variables globales ou locales
+
+                                SHOW GLOBAL STATUS
+                                SHOW SESSION STATUS
+
+                3* Utiliser les interfaces graphiques : Activity Monitor, System Monitor
+
+
+                4* Utiliser les Logs : Logs server et système  // Logs de SGDB
+
+                                exemple : Log d'erreur ' : créé à chaque lancement de MSSQL Server
+                                        Event log : qui donne les infos et les erreurs sur les évènements
+                                        Trace log (optionnel) : conserve tous les changements de configuration qui sont survenus sur la base de données
+                
+
+
+                'FILTRER LES INFORMATIONS QUI SERVIRONT A IDENTIFIER LE PROBLEME'
+
+       
+        Une fois qu''on reçoit ou arrive à localiser les fihiers log, il faut ensuite interpréter le message d'erreur' ce qui n''est pas toujours évident. Il faut donc :
+
+                - Ouvrir le fichier log identifié
+
+                - Regarder les dates et heures qui coincident avec le début des incidents
+
+                - Identifier le message d''erreur : exemple -- Connection Failed, Error Login, etc.
+
+                - Trouver le ID number de l'erreur' : ça peut servir à voir dans la documentation les causes et comment régler ça. Exemple : -- SQL Server Error : 4060
+
+                - Trouver le nom de la procedure qui a planté : exemple : --Auth
+
+                - Trouver le numéro d''état : exemple : --08004 : correspond à un état du server 
+
+                - Trouver la description du problème si nécessaire : exemple : -- access to the requested database has been denied
+
+
+
+                'COMMENT DECODER TOUTES CES INFOS ?'
+
+        Et bah google mon pote -- sans rigoler
+
+        Sites de documentation officielle des SGDB -- 
+
+
+
+       
+-- Cours 3 : Utilisation des LOGS pour le dépannage
+
+        Le dépannage est le process systématique utilisé pour identifier la cause d''une erreur dans un ordinateur
+
+        Il faut un dépannage suivant une approche logique et méthodique
+
+        Le dépannage est une des raisons pour lesquelles les fichiers logs ont été créés.
+
+        
+                'C"EST QUOI UN LOG DE DIAGNOSTIC ?'
+        
+        Il s''agit d'' historique chornologique des évènements et erreurs dans un composant ou une application et qui peut servir à dénapper le système en cas de pannes.
+
+        -- Par exemple si un serveur web n'arrive pas à afficher un document alors une erreur est insérée dans le fichier log du serveur web.
+
+        On trouve dans certains logs des catégories de diagnostic : ex :-- FATAL, PANIC, NOTICE/NOTE
+
+                'TYPES DE LOG DE DIAGNOSTIC'
+
+        1. Logs du Server
+
+        2. Logs des périphériques de l''ordinateur
+
+        3. Logs du système d''exploitation
+
+        4. Logs de la base de données 
+
+        5. Logs du réseau
+
+        6. Logs des applications
+
+        Dans tout ça, le DBA doit faire très attention au 4. (Logs de la base de données). Il doit vérifier fréquemment les logs pour s'assurer que tout est ok'.
+        
+                log diagnostic + log transaction + logs de requête
+
+        
+                'LES INFORMATIONS CONTENUES DANS UN LOG DE DIAGNOSTIC'
+
+                - Le type d'erreur' et sa sévérité
+
+                - Le code d'erreur' et le message 
+
+                - La localisation de l'erreur' : URL ou le sous-système où l'erreur' s''est produite
+
+                - Le timestamp : comme un horodatage, utile pour un lien entre le moment de l''erreur chez l''utilisateur et le message d''erreur sur le serveur
+                
+                - L'adress IP' de l''utilisateur ou son code d'ordinateur'
+
+                - Informations additionnelles : dépends 
+
+
+                'LES LOGS SERVER POSTGRESQL'
+
+                1- infos : Erreurs de démarrage et d''arrêt de server, erreur de connection etc.
+
+                2- le fichier de configuration postgresql.conf permet de mettre les informations,et de définir le chemin de sortie des logs (syslog pour linux, event log pour windows vers un csvlog qui peut être importer dans les tables)
+
+
+                 'LES LOGS SERVER MySQL'
+
+                1- General query log : infos sur les connections et les requêtes reçu des postes clients
+
+                2- Slow query log : infos sur les requêtes qui prennent plus de temps à être exécutée que la normale (on définit la norme à partir d'un délai raisonable ou d'un délai spécifié qui ne va pas faire planter le système)
+
+                3- Error log : infos sur le diagnostic des messages de la base de données
+
+                NB : l'error log' de Mysql fournit également des infos d'avertissement et de notes' pendant le démarrage, l'arrêt' du server et les autres opérations de la base de données
+
+                Le log d'erreur' de mysql peut être configuré pour écrire dans le log du système d''exploitation.
+
