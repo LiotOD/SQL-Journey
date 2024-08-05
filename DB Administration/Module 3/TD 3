@@ -1,0 +1,63 @@
+
+-- TD 3 : Monitoring et optimisation dans une base de données MySQL version pratique
+
+        'EXERCICE 1 : CREER LA BASE DE DONNEES'
+
+                -- créer une base de données world
+
+                        CREATE DATABASE world;
+                        
+                -- utiliser la base de données crée
+
+                        use world;
+
+                -- insérer les données dans la base de données à partir d'un script
+
+                        SOURCE nom_du_script.sql;
+
+                -- afficher toutes les tables dans la base de données
+
+                        SHOW tables; 
+
+                                +-----------------+
+                                | Tables_in_world |
+                                +-----------------+
+                                | city            |
+                                | country         |
+                                | countrylanguage |
+                                +-----------------+
+
+
+        'EXERCICE 2 : MONITORER LA BASE DE DONNEES'
+
+                -- accéder à phpmyadmin
+
+                Onglet ETAT ---> Serveur, Processus, Statistiques sur les requêtes, Toutes les variables d'état, Surveillance, Conseiller
+
+                Surveillance ---> ajouter un graphique --> graphique prédéfinis --> utilisation du CPU
+
+
+
+
+        'EXERCICE 3 : OPTIMISER LA BASE DE DONNEES'
+
+                ETAPE 1 : Créer la base de données 
+
+              -->  créer une base de données : tournament_teams
+              -->  créer une table : teams avec 3 colonnes (team_no, team_code, creation_date) et choisir les types de données
+              -->  définir une clé primaire : structure de la table, primary key check la colonne team_no
+                                --> cela crée automatiquement un index sur la colonne team_no
+              
+              --> importer les données dans la table avec l'onglet importer 
+
+
+
+                ETAPE 2 : optimiser les types de données
+
+                --> changer les types de données en optant pour ce qui correspond le plus : ex : char vers varchar, char vers date et int vers tinyint
+                --> Juste en faisant ça on passe de 64Kb à 16Kb
+
+                --> Une étape supplémentaire est d'utiliser la fonction prédéfinie d'optimisation
+                --> tournament_teams ---> cocher la table teams ---> liste déroulante ---> optimiser la table (groupe maintenance de la table)
+                                                                            --> la requête qui est exécutée est : OPTIMIZE TABLE `teams`
+
