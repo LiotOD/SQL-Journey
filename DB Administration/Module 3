@@ -1,0 +1,518 @@
+
+--------------------------------------------------------------------------------------------
+                                        -- MODULE 3 --
+--------------------------------------------------------------------------------------------
+
+
+'Learning Objectives'
+        Describe the options available for monitoring database usage and performance.
+        Explain why you need to monitor at different levels and the four levels at which you should monitor.
+        Describe some important commands for optimization in different database languages
+        Explain what query optimization is.
+        Describe different types of database indexes and considerations for creating them.
+
+
+-- Cours 1 : Généraliltés sur le monitoring des bases de données
+
+        Le monitoring est l'ensemble' des différentes taches, relatives au controle journalier des statuts de la base de données.
+        C''est crucial pour garder la performance et la santé de la base de données 
+
+        En le faisant, on s''assure d''identifier plus rapidement les problèmes sur la base de données. 
+
+        Plusieurs SGDB ont des outils intégrés pour suivre l''etat et la performance de la base de données
+
+        -- Les taches de monitoring d'une base de données
+
+                '1. Prévoir vos futurs besoins en matériel en fonction des modèles d''utilisation de la base de données.'
+
+                '2. Analyser les performances individuelles de chaque base de données ou requêtes.'
+
+                '3. Suivre l''utilisation des index et des tables.'
+
+                '4. Déterminer la cause principale d''une eventuelle dégradation du système.'
+
+                '5. Optimiser les elements de la base de données pour offrir la meilleure performance possible'
+
+                '6. Voir l''impact de toute les activités d''optimisation.'
+
+
+        -- Proactive monitoring VS Reactive monitoring
+
+                'Reactive monitoring'
+
+                        Le monitoring réactif est réalisé le plus souvent après un problème important (faille de sécurité, problème d''acces à la base, etc.) 
+
+                        -- C'est une réponse au problème : médicament du médécin
+                        -- Doit être résolu le plus rapidement possible
+
+                ' Proactive monitoring VS Reactive monitoring'
+
+                        --Permet de ne pas être en situation de panique comme au reactive monitoring
+
+                        Observer les differents indicateurs des bases et des hardwares et envoie une alerte quand des valeurs anormales sont atteintes.
+                        
+                        Vérifier régulièrement que la base de données est en ligne et accessible
+
+                        Vérifier que de nouvelles configurations n''affectent pas la performance de la base de données
+
+                        Utilise les outils automatiques
+
+                        -- Il s'agit de la meilleure manière de monitorer une base de données et c'est ce qui est le plus choisi par les administrateurs de base de données
+
+
+                'Comment savoir si la base de données est performante et si cette performance est optimale ?'  
+                'ETABLISSEMENT D''UNE  BASELINE DE PERFORMANCE'     
+
+                        1. Il faut définir des indicateurs clés de performance du système.
+
+                        2. Calculer le chiffre qui correspond à la meilleure performance en fonction des indicateurs (exemple 10/10 avec une moyenne de 5/10)
+                        
+                        3. Enregistrer les performance à des indicateurs définis à intervalle régulier ou prédéfini. (3/10, 4/10, 8/10, 8/10, 6/10)
+
+                        4. Comparer ces indicateurs entre les différentes périodes. 
+                        -- (Pourquoi les chiffres varient et voir les différences entermes d''opérations, tables, bases, utilisateurs, heure: peak et off-peak hour, 
+                        -- le temps de réponse à chaque requête, quelles sont les requêtes qui prennent le plus de temps, le temps mis à faire des backup ou des restauration de données)
+
+                        5. Comparer les indicateurs de chaque période avec l'indicateur maximal pour voir ce qui empêche d'aller au niveau optimal. 
+
+                        6. S''alarmer quand on est en dessous de la moyenne
+
+                        7. Pendre les devants et réaliser des optimisations pour chaque élément de l''indicateur qui n''est pas au top 
+                        -- par exemple, il ne faut pas lancer des opérations lourdes comme les sauvegardes ou des auto-nettoyage en période de peak-hour
+                        -- demander à des utilisateurs qui font des opérations importantes, de ne pas les lancer à des peak hour et en dehors des heures ou les taches automatiques s'exécutent
+                                                
+
+
+                'LES ELEMENTS A REGARDER QUAND ON VEUT AMELIORER LA PERFORMANCE'
+
+                        1. Les ressources du système (hardware, CPU, RAM, Processeur, etc)
+
+                        2. L''architecture du réseau
+
+                        3. Le système d''exploitation
+
+                        4. Les applications de base de données
+
+                        5. Les applications chez le client (utilisateur)
+
+
+        
+         -- 2 manière de monitorer les opérations dans la base de données
+
+
+                - Point-in-Time (manuel) : 
+                        
+                        -- les tables de fonctions pour le monitoring
+
+                        -- Ces tables de fonctions permettent d'examiner les éléments monitorés et les mesures d'indicateurs qui reportent les opérations de la base
+
+                        -- Utilisation d'une infrastructure 
+
+
+                - Historical (automatique)
+
+                        -- Configurer des events monitor (evènements spécifiques) 
+
+                        -- Enreggistrer les évènements qui sont survenus dans une base de données suivant une certaine période
+
+                        -- Par exemple : enregistrer quand un pic d'utilisation de ressources est atteint (palier défini en amont)
+
+                        -- Ces évènements peuvent être enregistrés sous différents formats et peuvent être stockées dans des tables régulières
+
+                        -- On peut aussi définir des sorties spécifiques en fonction des SGDB
+
+
+
+-- Cours 2 : Utilisation du monitoring et performance partie 1
+
+        La première nécessité est d''utiliser des mesures souvent appellées des KPI (Key Performance Indicator)
+
+                -- utile pour optimiser les bases de données
+                -- utile également pour mesurer l'accessibilité, les opérations et la sécurité du système de bases de données
+
+                'le but ultime du monitoring est d''identifier et de prévenir les problèmes qui pourraient conduire à une mauvaise performance de la base de données'
+
+                NB : certains problèmes peuvent survenir malgré le monitoring et peuvent être causés par le hardware, les logiciels, les requêtes, la connexion réseau ou autre chose
+
+
+        Il existe 4 niveau de monitoring
+
+                1. Le niveau infrastructure : -- s'assurer que les éléments suivants fonctionnent de manière optimale
+                        '
+                                - Système d''exploitation (mises à jour faites et bien configurés)
+                                - Serveurs (bien configuré et acessibles)
+                                - Stockage (pas de stockage plein ou quasiment plein : garder à 60-75% max)
+                                - Eléments du réseau (flux, vitesse de la connexion, )
+                        '
+
+                2. Le niveau plateforme ou instance
+
+                        '
+                              - Concerne le SGBD utilisé
+                              - Il faut s''asurer que toutes les configurations prérequises et recommandées soient bien faites
+                              - Ce monitoring est crucial car elle offre une vision globale dans tous les éléments nécessaires pour maintenir des performances de base de données cohérentes.
+
+                        '
+
+                3. Le niveau requête
+
+                        '
+                              - Concerne toutes les requêtes qui sont demandées à la base de données
+                              - La majorité des problèmes ici peuvent provenir des manquements à une requête (mauvaise syntaxe, oubli de paramètres etc.)
+
+                        '
+
+                4. Le niveau utilisateur ou session 
+
+                        '
+                              - Est-ce que les utilisateurs se plaignent ou non du système
+                              - Si aucun utilisateur ne se plaint, est-ce que ça signifie directement que tout est ok? Oui et non pour l''instant, pas de problème mais 
+                              ça ne veut pas dire que dans les secondes qui suivent, il n''y en aurait pas.
+                              - 
+                        '
+
+                Le paradis du monitoring : 'c"est quand tu identifies un problème avant même qu''il ne se manifeste chez l''utilisateur'
+
+                Quand on fait le monitoring à ces 4 niveaux et que tout est bien fait alors on atteint le SLA (Service Level Agreement)
+                                - Haute disponibilité
+                                - Fonctionnement élevé
+                                - Faible latence 
+
+
+
+-- Cours 3 : Utilisation du monitoring et performance partie 2
+        
+        '---------------INDICATEURS DE MESURE DE PERFORMANCE DE BASE DE DONNEES (KPI MONITORING)-----------------------'
+
+                1. 'Débit de la base de données (Database throughput)'  : un des plus importants 
+
+                        il indique la quantité de travail réalisée par la base de données
+
+                        il est mesuré en terme de : 'nombre de requêtes exécutée / seconde'
+
+                2. 'L"utilisation des ressources d"une base de données' : 
+                
+                        mesure le CPU, mémoire vive et stockage
+
+                        deux points de meusure : Moyenne, Maxi, Latest + time series
+
+                3. 'Disponiilité de la base de données' : 
+
+                        en fonction du signal haut ou bas, on sait si la base est disponible ou non
+
+                        sa représentation est sous la forme d"un pourcentage dans le temps"
+
+                4. 'Réactivité d"une base de données' : très utilisé pour la mesure des performances
+
+                        montre comment le système réponds à des requêtes
+                
+                        la mesure est le temps moyen de réponses par requête. En fonction de la moyenne et du ratio optimal 
+                        
+                        on sait si la base est réactive ou non.
+
+                
+                5. 'Contention d"une base de données' : 
+
+                        indique s''il y a une contention entre les connections.
+                
+                        <<La contention est le résultat d’une demande élevée en même temps de plusieurs processus qui veulent accéder à la même ressource.
+                        
+                        Demande élevée pour une seule offre donc le système est saturé. Simple basique
+                        
+                        Quand la contention augmente, le rendement diminue.>> 
+
+
+                6. 'Unité de Travail' : 
+
+
+                        mesure les transactions qui consomment le plus de ressources sur le serveur de base de données
+
+                        Pour faire simple : on traque les gourmants et les obèses
+
+
+                7. 'Quelques unités de mesure de performance en plus'
+
+                        '* Connections '
+
+                        lister toutes les infos de connexion réseau à une base de données 
+                        indiquer si un serveur de base de données peut planter à cause de longues requêtes
+                        ou un nombre élevé de connexions ouvertes
+
+
+                '* Requêtes récentes'
+
+                        Lister les requêtes les plus fréquemment exécutées sur une base de données en spécifiant
+                
+                        -- la fréquence, le temps moyen de latence, la durée d"exécution etc.
+
+                        On peut donc identifier les requêtes à optimiser pour une meilleure performance du SGBD
+
+                        '* Objets bloqués (Locked Objects)'
+
+                        Liste les détails d''objets bloqués et les processus qui ont les ont bloqués
+
+                        Les locks et blocks empêchent les transactions d''accéder à un objet en meme temps
+
+                        Ils mettent en pause virtuellement l''accès à la ressource par un autre process tant que le précédent est pas fini.
+
+                
+                        '* Procédure stockées'
+
+                        mesure de manière agrégé l''exécution des procédures, procédures externes etc.
+
+                        
+                        '* Buffer pools : piscines buffer'
+
+                        permet de suivre l''utilisation des buffer pools et des tables spaces (ctocker du cache)
+
+                        quand le buffer pool est rempli, il supprime les anciennes données peu utilisées et fait de l''espace pour de nouvelles
+
+
+                        '* Top Consumer'
+
+                        Liste les grands consommateurs de ressources sur un sgdb 
+
+                        Il existe une grande variété d'indicateurs de performances'
+
+        
+        '---------------OUTILS DE MONITORING-----------------------'
+
+         Outils intégrés aux SGBD
+         
+                Sur Db2 : 
+                        Db2 Data Management console
+                        WorkLoad Manager
+                        Snapshot Monitors 
+
+                Sur PostgreSQL :
+                        PgAdmin Dashboard
+
+                Sur MySQL :
+                        MysSQL Workbench : performance Dashboard, performance reports, query statistics, query profiler
+
+
+
+        Outils tiers de monitoring
+
+        Sur postgre on peut utiliser pganalyze
+
+        PRTG Network Monitor, Foglight, Datadog
+
+-- Cours 4 : Optimisation de base de données
+
+        'POURQUOI OPTIMISER UNE BASE DE DONNEES'
+
+               - identifier et régler les goulots d''étranglements,
+               - Affiner les requêtes de base de données 
+               - Réduire le temps de réponse de la base de données pour les utilisateurs
+
+        Chaque SGDB a son utilitaire et ses commandes d''optimisation de base 
+
+                * MySQL a la commande : OPTIMIZE TABLE 
+                * PostgreSQL a les commandes : VACCUM et REINDEX
+                * DB2 a les commandes : RUNSTATS et REORG
+
+        'MYSQL' :   Quand un lot de données trop important est ajouté dans la base, celle-ci peut être fragmentée. Donc pour réorganiser tout ça on utilise la commande d'optimisation de tables'.
+
+                exemple : -- OPTIMIZE TABLE table1, table2, table3; 
+
+        'PostgreSQL' : -  On utilise la commande VACUUM pour optimiser la base de données. Ctte commande récupère l''espace de stockage perdu consommé par les tuples 'morts',
+                        qui ne sont pas physiquement supprimés dans la base de données après l''éxécution d''une commande DELETE ou une mise à jour. C''est comme le cache d''une appli quand tu la supprime de ton téléphone!
+                        en vidant le cache, on peut récupérer de l''espace. 
+
+
+                exemple : VACUUM -- quand on ne spécifie aucun paramètre alors le vidage du cache et de l'espace, se fait sur toutes les tables de toutes les bases de données où l'utilisateur a droit
+
+                          VACUUM table1, -- quand on spécifie alors le vidage se fait sur une seule table
+
+                          VACUUM FULL table1, -- quand on spécifie le paramètre FULL alors la commande va créer une copie complète du --contenu de la table et l'écrit sur le disque sans espace inutilisé, ce qui permet à l'espace d'être
+                                                -- d'être récupéré par le système d'exploitation. Ainsi, l'utilisation du paramètre FULL permet de récupérer plus d'espace, mais son exécution est beaucoup plus longue et nécessite un verrou 
+                                                -- d'exclusivité sur chaque table pendant son traitement.
+
+
+
+
+                        - On utilise la commande REINDEX pour recréer un ou plusieurs index. REINDEX reconstruit un index en utilisant les données stockées dans la table de l''index et remplace la version précédente, ancienne version de l''index. 
+                        Elle peut être utilisée lorsque des bogues logiciels ou des défaillances matérielles ont corrompu un index, ou lorsque un index a été gonflé et contient de nombreuses pages vides ou presque vides.
+                        
+
+                exemple : REINDEX INDEX index1; -- dans ce cas la commande va recréer l'index 1 (l'index est souvent sur une colonne)
+
+                          REINDEX TABLE table1; -- dans ce cas la commande va recréer tous les index existants sur la table (prends plus de temps)
+
+
+        'Db2' : - La commande RUNSTATS met à jour les statistiques dans le catalogue système concernant les caractéristiques d''une table, des index associés ou des vues statistiques. Ces caractéristiques comprennent le nombre d''enregistrements, 
+                le nombre de pages et la longueur moyenne des enregistrements. L''optimiseur utilise ces statistiques pour déterminer les chemins d''accès aux données. Pour une table, appelez la commande RUNSTATS lorsque la table a fait l''objet de
+                nombreuses mises à jour ou après la réorganisation de la table.
+
+
+                exemples : RUNSTATS ON TABLE table1 WITH DISTRIBUTION ON COLUMNS (col1, col2) -- la commande collecte des statistiques sur la table 1 et des statistiques de distributions sur les colonnes
+
+                        
+                            RUNSTATS ON TABLE table1 for indexes index1, index2 -- collecte les statistiques sur les indexes
+
+
+
+                - La commande REORG TABLE réorganise une table en reconstruisant les lignes pour éliminer les données fragmentées et en compactant les informations.
+
+                exemple : db2 REORG TABLE table1 USE temptable1; -- réorganise la table en récupérant l'espace vide et utilise une table temporaire pour garder les informations
+
+                        
+                - La commande REORG INDEX réorganise tous les index définis dans une table en reconstruisant les données d''index dans des pages continues physiques et non-fragmentées
+
+                        Quand on fait un CLEAN UP, il s''exécute sans reconstruire les indexes
+
+
+
+
+-- Cours 5 : Utilisation des index
+
+        'UN INDEX C"EST QUOI ?' : C''est comme une table des matières dans un livre : tu sais directement à quelle page se trouve l''information que tu recherches
+
+                avec un index, on peut retrouver plus vite une information dans la base de données car le système sait où chercher (quelle table, quelle colonne, etc.)
+
+                l''index augmente de manière significative la performance de la base de données.
+
+
+        'COMMENT CA MARCHE UN INDEX ?' : C''est comme une copie ordonnée des colonnes dans une table. Cette manière d'ordonner' la colonne sur laquelle on fait l''index permet de cherche rapidement la ligne qui intéresse.
+
+
+        'COMMENT ON CHOISIT LA COLONNE SUR LAQUELLE CREER UN INDEX ?': C''est l'administrateur de base de données' qui décide en fonction de plusieurs critères :
+
+                                                                                * les termes de recherches les plus fréquents
+                                                                                * les colonnes importantes pour différencier les informations
+                                                                                * les colonnes qui regroupent des informations
+
+
+        même si les index augmente la performance de la base de données, elle nécessite aussi de l''espace et de la maintenance donc il faut faire attention à ne pas en créer des centaines aussi.
+
+
+      '------- CATEGORIES D"INDEX------'
+      
+        Narrow index : peu de colonne, prends moins d''espace disque et peu de temps de maintenance mais est moins efficace sur de longues requêtes
+
+        Wide index : prends en compte beaucoup de colonnes, consomme plus d''espace disque, plus de temps de maintenance mais est très efficace sur de longues requêtes complexes
+
+
+
+        '-------------TYPES ET METHODES D"INDEXATION DANS LES BASE DE DONNEES-------------'
+
+
+                1* La clé primaire : 
+                
+                                        -- elle est unique, non nulle et il ne peut y en avoir qu'une par table
+                                        -- aggrégé : les données sont stockées dans un certain ordre en se basant sur la clé primaire
+
+                2* Index : 
+                                        --  non agrégé et peut être utilisé sur une seule ou plusieurs colonnes 
+                                        -- les index sont uniques ou non unique
+
+                3* Ordre de la colonne :
+                                        -- le tri ascendant ou descendant
+                                        -- trier d'abord la première colonne et les autres ensuite
+
+
+
+        --------------------------------------------------------------------------------------------------------------------------------
+
+             '   TYPE D''INDEX MYSQL                   |                                      DESCRIPTION'
+
+        --------------------------------------------------------------------------------------------------------------------------------
+
+                Index ordinaire/normal/régulier       |         Un index où les valeurs ne doivent pas 
+                                                      |         être uniques et peuvent être NULL.
+
+        --------------------------------------------------------------------------------------------------------------------------------
+
+                Index primaire                        |         Un index lié aux clés primaires. 
+                                                      |         Les valeurs sont uniques et non nulles.
+
+        --------------------------------------------------------------------------------------------------------------------------------
+
+                Index unique                          |          Un index où toutes les valeurs des colonnes sont uniques.   
+                                                      |          Contrairement à l''index primaire, les index uniques peuvent 
+                                                      |          contenir une valeur NULL   
+
+        --------------------------------------------------------------------------------------------------------------------------------
+
+                Index en texte intégral               |         Un index utilisé pour la recherche dans de grandes quantités de texte 
+                                                      |          et ne peut être créé que pour les colonnes de type char, varchar 
+                                                      |          et/ou text.
+
+        --------------------------------------------------------------------------------------------------------------------------------
+                Prefix Index                          |         Un index qui utilise uniquement les N premiers caractères d''une valeur 
+                                                                textuelle, ce qui peut améliorer les performances car seuls ces 
+                                                                caractères doivent être recherchés.
+                
+      --------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+        '---------- CREATION DE CLE PRIMAIRE DANS UNE TABLE------------------'
+
+                1* construire un identifiant unique pour la table concernée
+
+                2* C''est recommandé de créer l''index quand on est en train de créer la table
+
+                        ---------- A PARTIR D"UNE SEULE COLONNE------------------
+
+                        exemple de syntaxe : CREATE TABLE NOM_TABLE (col_cle_pirmaire integer not null primary key, 
+                                                                        colonne2 varchar(32));
+                
+
+                        ---------- A PARTIR DE PLUSIEURS COLONNES------------------
+
+                        exemple de syntaxe : CREATE TABLE NOM_TABLE (col_1 integer not null, 
+                                                                    col_2 integer not null, 
+                                                                    ......................
+                                                                PRIMARY KEY (col_1, col_2));
+
+                        
+                   
+                3* Pour être sûr du caractère unique de la pkey, on utilise souvent l'auto incrémentation'.
+
+
+                        exemple avec Db2 : CREATE TABLE NOM_TABLE (col1 int generated by default as identity primary key,
+                                                                        col2 varchar(32));
+
+                        exemple avec MySQL : CREATE TABLE NOM_TABLE (col1 smallint not null AUTO_INCREMENT,
+                                                                        col2 varchar(32)
+                                                                        primary key(col1));
+
+
+
+        '---------- SYNTAXE DE CREATION DES INDEX------------------'
+
+
+        CREATE INDEX nom_index on NOM_TABLE (col1, col2, et toutes les colonnes où on veut des index);
+
+
+        CREATE UNIQUE INDEX nom_index on NOM_TABLE (col1);
+
+
+
+
+        '---------- SUPPRESSION DES INDEX------------------'
+
+
+        DROP INDEX nom_index;
+
+
+
+        '---------- CHOSES A CONSIDERER QUAND ON VEUT CREER DES INDEX------------------'
+
+
+                1* comment la base de donnée est utilisée 
+
+                2* comprendre les requêtes les plus utilisées
+
+                3* comprendre les caractéristiques des colonnes (unicité, type de données)
+
+                4* quand créer et voir l''utilité de l''index
+
+                5* voir les implications au niveau du stockage
