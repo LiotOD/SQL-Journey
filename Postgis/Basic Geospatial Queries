@@ -1,0 +1,5 @@
+/*Intersection*/
+
+SELECT city.name, state.name, city.geom
+FROM city JOIN state ON ST_Intersects(city.geom, state.geom);
+
