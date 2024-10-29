@@ -6,7 +6,7 @@ Bienvenue sur mon répertoire GitHub dédié à ma prise de compétence sur SQL 
 
 ## Contenu du Répertoire
 
-- **Cours** : Des ressources sur des cours en ligne que j'ai suivi.
+- **Cours** : Des ressources sur des cours que j'ai suivi.
 - **Challenges** : Des exercices variés allant des requêtes basiques aux opérations complexes.
 - **Exemples Concrets** : Des exemples pratiques pour illustrer chaque concept.
 
