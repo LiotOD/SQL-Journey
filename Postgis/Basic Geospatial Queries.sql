@@ -12,12 +12,11 @@ group by srid; -- on peut utilisé limit 1 au lieu du group by, les données son
 select nom_com, round(cast((st_area(geom)/10000) as decimal),2) as sup_km2 
 from commune
 order by sup_km2 desc
-
-  
+ 
 /*--3-Quelles sont les 5 communes avec le plus de densité de population au Km²*/
 select nom_com, pop2013,
-round(cast((st_area(geom)/10000) as decimal),2) as sup_km2,
-cast(pop2013 as numeric)/ round(cast((st_area(geom)/10000) as decimal),2) as dens_km2
+round(cast((st_area(geom)/1000000) as decimal),2) as sup_km2,
+cast(pop2013 as numeric)/ round(cast((st_area(geom)/1000000) as decimal),2) as dens_km2
 from commune
 order by dens_km2 desc
 limit 5
@@ -32,7 +31,18 @@ select code_dep, nom_com, pop2013,
 sum(cast(pop2013 as integer)) over(order by code_dep, nom_com) as popcumul
 from commune
 
-/*--5- Selectionner les localités du departement 01 */
+
+/*--5- calculer la superficie totale de chaque département  et faire une somme cumulative pour avoir la superficie totale en Km² */
+/*le plus simple est de décomposer la requête en deux parties et d'utiliser une cte pour combiner les geom des communes en départements puis, faire après une somme cumulative*/
+
+with cte_superficie as
+(
+	select st_union(geom) as geom2, code_dep from commune group by code_dep -- fusionner les géométries des communes en fonction des départements pour en avoir une/dep
+)
+select code_dep, st_area(geom2)/1000000 as sup_km2, sum(st_area(geom2)/1000000) over (order by code_dep) as cumul
+from cte_superficie
+
+/*--6- Selectionner les localités du departement 01 */
 /* On récupère cette info via une sélection par localisation, le plus simple est de décomposer la requête en deux parties et d'utiliser une cte*/
 
   With cte_dep01 as ( --creation de la cte
