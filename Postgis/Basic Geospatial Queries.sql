@@ -55,8 +55,13 @@ select localite.nom_loc,
 	from localite
 		where st_intersects(localite.geom, (select geom from cte_dep01 /* je récupère la geom de la cte */)) -- filtrage selon l'intersection entre les deux couches
 
-
-
+/*--7- Trouver les 10 noms de localités les plus courants */
+select nom_loc, 
+	count(*) as compte 
+	from localite
+		group by nom_loc
+		order by compte desc
+		limit 10
 
 
 
