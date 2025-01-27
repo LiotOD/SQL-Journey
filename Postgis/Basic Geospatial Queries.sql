@@ -63,7 +63,7 @@ select nom_loc,
 		order by compte desc
 		limit 10
 
-/*--8- Calculer la distance de chaque chef-lieu de commune par rapport à la capitale éconoique Cotonou */
+/*--8- Calculer la distance de chaque chef-lieu de commune par rapport à la capitale */
 
 
 
