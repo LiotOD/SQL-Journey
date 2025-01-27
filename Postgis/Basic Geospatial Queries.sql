@@ -63,7 +63,17 @@ select nom_loc,
 		order by compte desc
 		limit 10
 
-/*--8- Calculer la distance de chaque chef-lieu de commune par rapport à la capitale */
+/*--8- Calculer la distance de chaque chef-lieu de commune ou de département par rapport à la capitale */
+
+with cte_capitale as(
+select nom_loc, geom from localite where statut_adm = 'CAPITALE' -- faire une cte pour récupérer la capitale
+)
+select nom_loc, 
+	round(cast(st_distance(geom, (select cte_capitale.geom from cte_capitale))/1000 as decimal), 2)  as distance_km 
+	-- utilisation de la fonction  st_distance + quelques opérations pour arrondir et avoir la distance en Km
+	from localite 
+	where statut_adm = 'CL_COMMUNE' or statut_adm = 'CL_DEPARTEMENT'
+	order by distance_km asc
 
 
 
