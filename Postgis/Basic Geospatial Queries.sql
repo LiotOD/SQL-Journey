@@ -73,7 +73,7 @@ select nom_loc,
 	-- utilisation de la fonction  st_distance + quelques opérations pour arrondir et avoir la distance en Km
 	from localite 
 	where statut_adm = 'CL_COMMUNE' or statut_adm = 'CL_DEPARTEMENT'
-	order by distance_km asc
+	order by distance_km asc 
 
 
 
