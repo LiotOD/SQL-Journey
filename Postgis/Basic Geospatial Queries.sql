@@ -76,6 +76,27 @@ select nom_loc,
 	order by distance_km asc 
 
 
+/*--9- Créer des contours de département à partir des communes qui sont dans le même département, ensuite affecter les bons noms de départements aux entités créées */
+
+	select code_dep, 
+	case when code_dep = '01' then  'Alibori' --utiliser case pour affecter les valeurs conditionnelles
+	 when code_dep = '02' then  'Atacora'
+	 when code_dep = '03' then  'Atlantique'
+	 when code_dep = '04' then  'Borgou'
+	 when code_dep = '05' then  'Couffo'
+	 when code_dep = '06' then  'Collines'
+	 when code_dep = '07' then  'Donga'
+	 when code_dep = '08' then  'Littoral'
+	 when code_dep = '09' then  'Mono'
+	 when code_dep = '10' then  'Ouémé'
+	 when code_dep = '11' then  'Plateau'
+	 when code_dep = '12' then  'Zou'
+	end as nom_dep, 	-- mettre l'alias après le end
+	st_union(geom) -- l'union des géométries
+	from commune group by code_dep --regrouper 
+	order by code_dep asc
+
+/*--10- Puisqu'il y a des trous dans les polygones, on va les supprimer et mettre le résultat dans une vue pour qu'elle soit réutilisée.*/
 
 
 
