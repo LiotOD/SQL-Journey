@@ -1,6 +1,7 @@
 /*Les données sont dans le dossier data du repo SQL-Journey. Je travaillerai avec les localités et les limites de commune du Bénin.
 Vous pouvez ajouter ces données à une bdd en utilisant qgis, arcgis pro, fme par exemple. Il y a aussi un backup de la base que vous pouvez utiliser directement
-Créez une base postgre que vous appelez postgis, ensuite vous faites un restore avec le fichier postgis.backup */
+Créez une base postgre que vous appelez postgis, ensuite vous faites un restore avec le fichier postgis.backup 
+ressource utile --> https://postgis.net/docs/manual-3.6/postgis_cheatsheet-fr.html */
 
 /*--1-Trouver le scr des données*/
 select st_srid(geom) as srid 
@@ -96,8 +97,139 @@ select nom_loc,
 	from commune group by code_dep --regrouper 
 	order by code_dep asc
 
-/*--10- Puisqu'il y a des trous dans les polygones, on va les supprimer et mettre le résultat dans une vue pour qu'elle soit réutilisée.*/
+/*--10- Puisqu'il y a des trous dans les polygones, on va compter le nombre de trous dans chaque polygone.*/
+	with cte_dep as --je reprends la requête précédente que je mets dans une cte pour commencer
+	(select code_dep, 
+	case when code_dep = '01' then  'Alibori'
+	 when code_dep = '02' then  'Atacora'
+	 when code_dep = '03' then  'Atlantique'
+	 when code_dep = '04' then  'Borgou'
+	 when code_dep = '05' then  'Couffo'
+	 when code_dep = '06' then  'Collines'
+	 when code_dep = '07' then  'Donga'
+	 when code_dep = '08' then  'Littoral'
+	 when code_dep = '09' then  'Mono'
+	 when code_dep = '10' then  'Ouémé'
+	 when code_dep = '11' then  'Plateau'
+	 when code_dep = '12' then  'Zou'
+	end as nom_dep, 	
+	st_union(geom) as geom2
+	from commune group by code_dep
+	order by code_dep asc)
+		select code_dep, 
+		nom_dep, 	
+		geom2, 
+		st_numinteriorring(geom2) as nb_trous -- ici j'utilise la fonction qui fais ressortir le nombre de trous  l'intérieur d'un polygone
+		from cte_dep
+		
+/*--11- On va maintenant supprimer les trous dans les polygones et garder uniquement le polygone avec son enveloppe externe. On veut le résultat sous la forme d'un polygone*/
+/*
+Avant de continuer, je fasi une note sur les types de données composites : ils permettent de regrouper plusieurs champs de différents types en une seule colonne. 
+Par exemple un type adresse où dans la colonne adresse j'ai 4 infos différentes mais en un seul enregistrement : adresse (rue TEXT, ville TEXT, code_postal INT, geom geometry)
+la fonction st_dumprings(https://postgis.net/docs/ST_DumpRings.html) est très utile ici car non seulement elle extrait tous les anneaux d'un polygone mais elle stocke cette
+information sous la forme d'un type de données composite au format (path, geometry) où : 
+		- path : tableau d'entiers de longueur 1 contenant l'indice de l'anneau du polygone. Anneau extérieur --> 0. Trous --> indices 1 et plus.
+		- geometry : géométrie de l'anneau sous forme de polygone. 
+*/
 
+WITH cte_dep AS (
+    SELECT 
+        code_dep, 
+        CASE 
+            WHEN code_dep = '01' THEN 'Alibori'
+            WHEN code_dep = '02' THEN 'Atacora'
+            WHEN code_dep = '03' THEN 'Atlantique'
+            WHEN code_dep = '04' THEN 'Borgou'
+            WHEN code_dep = '05' THEN 'Couffo'
+            WHEN code_dep = '06' THEN 'Collines'
+            WHEN code_dep = '07' THEN 'Donga'
+            WHEN code_dep = '08' THEN 'Littoral'
+            WHEN code_dep = '09' THEN 'Mono'
+            WHEN code_dep = '10' THEN 'Ouémé'
+            WHEN code_dep = '11' THEN 'Plateau'
+            WHEN code_dep = '12' THEN 'Zou'
+        END AS nom_dep, 	
+        ST_Union(geom) AS geom2
+    FROM commune 
+    GROUP BY code_dep
+),
+cte_trous AS (
+    SELECT 
+        code_dep, 
+        nom_dep, 
+        ST_NumInteriorRings(geom2) AS nb_trous, 
+        (ST_DumpRings(geom2)).geom AS trous_geom,
+        (ST_DumpRings(geom2)).path AS path
+    FROM cte_dep
+)
+SELECT 
+    code_dep, 
+    nom_dep, 
+    nb_trous, 
+    path,
+    trous_geom
+FROM cte_trous
+WHERE path[1] = 0;  -- Filtrage pour ne garder que les trous
+
+/*-- 12- Si à la question 11 on voulait juste le résultat sous la forme d'une ligne, c'est à dire le contour externe*/
+/* on utiliserait juste la fonction ST_ExteriorRing() qui renvoie une ligne représentant l'anneau extérieur d'un polygone.*/
+
+WITH cte_dep AS (
+    SELECT 
+        code_dep, 
+        CASE 
+            WHEN code_dep = '01' THEN 'Alibori'
+            WHEN code_dep = '02' THEN 'Atacora'
+            WHEN code_dep = '03' THEN 'Atlantique'
+            WHEN code_dep = '04' THEN 'Borgou'
+            WHEN code_dep = '05' THEN 'Couffo'
+            WHEN code_dep = '06' THEN 'Collines'
+            WHEN code_dep = '07' THEN 'Donga'
+            WHEN code_dep = '08' THEN 'Littoral'
+            WHEN code_dep = '09' THEN 'Mono'
+            WHEN code_dep = '10' THEN 'Ouémé'
+            WHEN code_dep = '11' THEN 'Plateau'
+            WHEN code_dep = '12' THEN 'Zou'
+        END AS nom_dep, 	
+        ST_Union(geom) AS geom2
+    FROM commune 
+    GROUP BY code_dep
+)
+SELECT 
+    code_dep, 
+    nom_dep, 	
+    st_exteriorring(geom2) AS contours_externes ---> la fonction pour obtenir les contours externes
+FROM cte_dep;
+
+/*--13- la réponse la plus simple à la question 11 serait dans un premier temps de récupérer le contour externe sous la forme d'une ligne puis de le convertir en polygone*/
+
+WITH cte_dep AS (
+    SELECT 
+        code_dep, 
+        CASE 
+            WHEN code_dep = '01' THEN 'Alibori'
+            WHEN code_dep = '02' THEN 'Atacora'
+            WHEN code_dep = '03' THEN 'Atlantique'
+            WHEN code_dep = '04' THEN 'Borgou'
+            WHEN code_dep = '05' THEN 'Couffo'
+            WHEN code_dep = '06' THEN 'Collines'
+            WHEN code_dep = '07' THEN 'Donga'
+            WHEN code_dep = '08' THEN 'Littoral'
+            WHEN code_dep = '09' THEN 'Mono'
+            WHEN code_dep = '10' THEN 'Ouémé'
+            WHEN code_dep = '11' THEN 'Plateau'
+            WHEN code_dep = '12' THEN 'Zou'
+        END AS nom_dep, 	
+        ST_Union(geom) AS geom2
+    FROM commune 
+    GROUP BY code_dep
+)
+SELECT 
+    code_dep, 
+    nom_dep, 	
+    ST_NumInteriorRings(geom2) AS nb_trous, 
+    st_makepolygon(st_exteriorring(geom2)) AS contours_polygone -- récupérer le contours et le convertir en polygone
+FROM cte_dep 
 
 
 
