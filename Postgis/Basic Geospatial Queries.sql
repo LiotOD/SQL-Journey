@@ -123,16 +123,16 @@ select nom_loc,
 		from cte_dep
 		
 /*--11- On va maintenant supprimer les trous dans les polygones et garder uniquement le polygone avec son enveloppe externe. On veut le résultat sous la forme d'un polygone*/
-/*
-Avant de continuer, je fasi une note sur les types de données composites : ils permettent de regrouper plusieurs champs de différents types en une seule colonne. 
-Par exemple un type adresse où dans la colonne adresse j'ai 4 infos différentes mais en un seul enregistrement : adresse (rue TEXT, ville TEXT, code_postal INT, geom geometry)
-la fonction st_dumprings(https://postgis.net/docs/ST_DumpRings.html) est très utile ici car non seulement elle extrait tous les anneaux d'un polygone mais elle stocke cette
-information sous la forme d'un type de données composite au format (path, geometry) où : 
+	/*
+	Avant de continuer, je fais une note sur les types de données composites : ils permettent de regrouper plusieurs champs de différents types en une seule colonne. 
+	Par exemple un type composite que j'appelle "adresse" où dans la colonne adresse j'ai 4 infos différentes mais en un seul enregistrement : adresse (rue TEXT, ville TEXT, code_postal INT, geom geometry)
+	La fonction st_dumprings(https://postgis.net/docs/ST_DumpRings.html) est très utile ici car non seulement elle extrait tous les anneaux d'un polygone mais elle stocke cette information sous la forme 
+	d'un type de données composite au format (path, geometry) où : 
 		- path : tableau d'entiers de longueur 1 contenant l'indice de l'anneau du polygone. Anneau extérieur --> 0. Trous --> indices 1 et plus.
 		- geometry : géométrie de l'anneau sous forme de polygone. 
-*/
+	*/
 
-WITH cte_dep AS (
+WITH cte_dep AS ( -- je reprends la requête précédente
     SELECT 
         code_dep, 
         CASE 
@@ -153,13 +153,13 @@ WITH cte_dep AS (
     FROM commune 
     GROUP BY code_dep
 ),
-cte_trous AS (
+cte_trous AS ( --ici je fais une seconde cte qui va me servir pour récupérer les géométries des trous et les valeurs du type composite généré par la fonction ST_DumpRings
     SELECT 
         code_dep, 
         nom_dep, 
-        ST_NumInteriorRings(geom2) AS nb_trous, 
-        (ST_DumpRings(geom2)).geom AS trous_geom,
-        (ST_DumpRings(geom2)).path AS path
+        ST_NumInteriorRings(geom2) AS nb_trous, -- je récupère le nombre de trous
+        (ST_DumpRings(geom2)).geom AS trous_geom, -- je prends l'attribut géométrie des trous
+        (ST_DumpRings(geom2)).path AS path -- je prends l'attribut indice des trous
     FROM cte_dep
 )
 SELECT 
@@ -169,7 +169,7 @@ SELECT
     path,
     trous_geom
 FROM cte_trous
-WHERE path[1] = 0;  -- Filtrage pour ne garder que les trous
+WHERE path[1] = 0;  -- Filtrage pour ne garder que l'enveloppe externe, voir plus haut externe
 
 /*-- 12- Si à la question 11 on voulait juste le résultat sous la forme d'une ligne, c'est à dire le contour externe*/
 /* on utiliserait juste la fonction ST_ExteriorRing() qui renvoie une ligne représentant l'anneau extérieur d'un polygone.*/
