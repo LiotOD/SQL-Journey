@@ -263,8 +263,17 @@ select
     code_dep, 
     nom_dep, 	
     st_NumInteriorRings(geom2) as nb_trous, 
-    st_makepolygon(st_exteriorring(geom2)) as geom -- récupérer le contours et le convertir en polygone
+    st_makepolygon(st_exteriorring(geom2)) as geom -- récupérer le contours et le convertir en polygone en gardant geom comme alias
 from cte_dep ;
+
+
+/*--15- Compter le nombre de communes dans chaque département, le nombre d'arronndissement, et le nombre de localités en utilisant les tables localite et commune et la vue v_depar*/
+
+
+
+
+
+
 
 
 
