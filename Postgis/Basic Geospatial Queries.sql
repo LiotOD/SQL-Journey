@@ -1,12 +1,13 @@
 /*Les données sont dans le dossier data du repo SQL-Journey. Je travaillerai avec les localités et les limites de commune du Bénin.
 Vous pouvez ajouter ces données à une bdd en utilisant qgis, arcgis pro, fme par exemple. Il y a aussi un backup de la base que vous pouvez utiliser directement
 Créez une base postgre que vous appelez postgis, ensuite vous faites un restore avec le fichier postgis.backup 
-ressource utile --> (https://postgis.net/docs/manual-3.6/postgis_cheatsheet-fr.html) */
+ressource utile --> https://postgis.net/docs/manual-3.6/postgis_cheatsheet-fr.html*/
 
 /*--1-Trouver le scr des données*/
 select st_srid(geom) as srid 
 	from localite 
 	group by srid; -- on peut utilisé limit 1 au lieu du group by, les données sont en epsg 32631
+
 
 /*--2-calculer la superficie des communes en Km², garder 2 chiffres après la virgule, puis les ordonner par ordre décroissant */
 -- dans l'ordre on calcule la superficie quon divise pour l'avoir en km², ensuite on la convertit en un réel ou numeric pour utiliser le round et garder les 2 chiffres après la virgule 
@@ -30,8 +31,8 @@ ensuite limit 5 pour garder les 5 first "Cotonou","Porto-novo","Adjarra","Avrank
  --Pour calculer une somme cumulative, il faut garder en tête les deux fonctions SUM et OVER. Syntaxe : SUM(colonne) OVER (ORDER by colonne1, col2)
 	
 select code_dep, nom_com, pop2013, 
-sum(cast(pop2013 as integer)) over(order by code_dep, nom_com) as popcumul
-from commune
+	sum(cast(pop2013 as integer)) over(order by code_dep, nom_com) as popcumul
+	from commune
 
 /*--5- calculer la superficie totale de chaque département  et faire une somme cumulative pour avoir la superficie totale en Km² */
 /*le plus simple est de décomposer la requête en deux parties et d'utiliser une cte pour combiner les geom des communes en départements puis, faire après une somme cumulative*/
@@ -59,7 +60,7 @@ select localite.nom_loc,
 /*--7- Trouver les 10 noms de localités les plus courants */
 select nom_loc, 
 	count(*) as compte 
-	from localite
+		from localite
 		group by nom_loc
 		order by compte desc
 		limit 10
@@ -72,14 +73,14 @@ select nom_loc, geom from localite where statut_adm = 'CAPITALE' -- faire une ct
 select nom_loc, 
 	round(cast(st_distance(geom, (select cte_capitale.geom from cte_capitale))/1000 as decimal), 2)  as distance_km 
 	-- utilisation de la fonction  st_distance + quelques opérations pour arrondir et avoir la distance en Km
-	from localite 
-	where statut_adm = 'CL_COMMUNE' or statut_adm = 'CL_DEPARTEMENT'
-	order by distance_km asc 
+		from localite 
+		where statut_adm = 'CL_COMMUNE' or statut_adm = 'CL_DEPARTEMENT'
+		order by distance_km asc 
 
 
 /*--9- Créer des contours de département à partir des communes qui sont dans le même département, ensuite affecter les bons noms de départements aux entités créées */
 
-	select code_dep, 
+select code_dep, 
 	case when code_dep = '01' then  'Alibori' --utiliser case pour affecter les valeurs conditionnelles
 	 when code_dep = '02' then  'Atacora'
 	 when code_dep = '03' then  'Atlantique'
@@ -92,35 +93,37 @@ select nom_loc,
 	 when code_dep = '10' then  'Ouémé'
 	 when code_dep = '11' then  'Plateau'
 	 when code_dep = '12' then  'Zou'
-	end as nom_dep, 	-- mettre l'alias après le end
+	end as nom_dep, -- mettre l'alias après le end
 	st_union(geom) -- l'union des géométries
-	from commune group by code_dep --regrouper  par code dep pour avoir une entité par département 
-	order by code_dep asc
+		from commune 
+		group by code_dep --regrouper  par code dep pour avoir une entité (attributs et géométries) par département 
+		order by code_dep asc
 
 /*--10- Puisqu'il y a des trous dans les polygones, on va compter le nombre de trous dans chaque polygone.*/
-with cte_dep as --je reprends la requête précédente que je mets dans une cte pour commencer
-(select code_dep, 
-    case when code_dep = '01' then  'Alibori'
-	 when code_dep = '02' then  'Atacora'
-	 when code_dep = '03' then  'Atlantique'
-	 when code_dep = '04' then  'Borgou'
-	 when code_dep = '05' then  'Couffo'
-	 when code_dep = '06' then  'Collines'
-	 when code_dep = '07' then  'Donga'
-	 when code_dep = '08' then  'Littoral'
-	 when code_dep = '09' then  'Mono'
-	 when code_dep = '10' then  'Ouémé'
-	 when code_dep = '11' then  'Plateau'
-	 when code_dep = '12' then  'Zou'
-	end as nom_dep, 	
-	st_union(geom) as geom2
-	from commune group by code_dep
-)
-		select code_dep, 
-		nom_dep, 	
-		geom2, 
-		st_numinteriorring(geom2) as nb_trous -- ici j'utilise la fonction qui fais ressortir le nombre de trous  l'intérieur d'un polygone
-		from cte_dep
+
+	with cte_dep as --je reprends la requête précédente que je mets dans une cte pour commencer
+	(select code_dep, 
+	    case when code_dep = '01' then  'Alibori'
+		 when code_dep = '02' then  'Atacora'
+		 when code_dep = '03' then  'Atlantique'
+		 when code_dep = '04' then  'Borgou'
+		 when code_dep = '05' then  'Couffo'
+		 when code_dep = '06' then  'Collines'
+		 when code_dep = '07' then  'Donga'
+		 when code_dep = '08' then  'Littoral'
+		 when code_dep = '09' then  'Mono'
+		 when code_dep = '10' then  'Ouémé'
+		 when code_dep = '11' then  'Plateau'
+		 when code_dep = '12' then  'Zou'
+		end as nom_dep, 	
+		st_union(geom) as geom2
+		from commune group by code_dep
+	)
+	select code_dep, 
+	nom_dep, 	
+	geom2, 
+	st_numinteriorring(geom2) as nb_trous -- ici j'utilise la fonction qui fais ressortir le nombre de trous  l'intérieur d'un polygone
+	from cte_dep
 		
 /*--11- On va maintenant supprimer les trous dans les polygones et garder uniquement le polygone avec son enveloppe externe. On veut le résultat sous la forme d'un polygone*/
 	/*
@@ -135,22 +138,23 @@ with cte_dep as --je reprends la requête précédente que je mets dans une cte 
 with cte_dep as ( -- je reprends la requête précédente
     select 
         code_dep, 
-    case when code_dep = '01' then  'Alibori'
-	 when code_dep = '02' then  'Atacora'
-	 when code_dep = '03' then  'Atlantique'
-	 when code_dep = '04' then  'Borgou'
-	 when code_dep = '05' then  'Couffo'
-	 when code_dep = '06' then  'Collines'
-	 when code_dep = '07' then  'Donga'
-	 when code_dep = '08' then  'Littoral'
-	 when code_dep = '09' then  'Mono'
-	 when code_dep = '10' then  'Ouémé'
-	 when code_dep = '11' then  'Plateau'
-	 when code_dep = '12' then  'Zou'
+	case 
+		when code_dep = '01' then  'Alibori'
+		 when code_dep = '02' then  'Atacora'
+		 when code_dep = '03' then  'Atlantique'
+		 when code_dep = '04' then  'Borgou'
+		 when code_dep = '05' then  'Couffo'
+		 when code_dep = '06' then  'Collines'
+		 when code_dep = '07' then  'Donga'
+		 when code_dep = '08' then  'Littoral'
+		 when code_dep = '09' then  'Mono'
+		 when code_dep = '10' then  'Ouémé'
+		 when code_dep = '11' then  'Plateau'
+		 when code_dep = '12' then  'Zou'
 	end as nom_dep, 
         st_Union(geom) as geom2
-    from commune 
-    group by code_dep
+		    from commune 
+		    group by code_dep
 ),
 cte_trous as ( --ici je fais une seconde cte qui va me servir pour récupérer les géométries des trous et les valeurs du type composite généré par la fonction st_DumpRings
     select 
@@ -159,7 +163,7 @@ cte_trous as ( --ici je fais une seconde cte qui va me servir pour récupérer l
         st_NumInteriorRings(geom2) as nb_trous, -- je récupère le nombre de trous dans la géométrie issue de la cte précédente
         (st_DumpRings(geom2)).geom as trous_geom, -- je prends l'attribut géométrie des trous en me basant sur la géométrie issue de la cte précédente
         (st_DumpRings(geom2)).path as path -- je prends l'attribut indice des trous
-    from cte_dep
+    		from cte_dep
 )
 select -- requête finale
     code_dep, 
@@ -170,8 +174,8 @@ select -- requête finale
 from cte_trous
 where path[1] = 0;  -- Filtrage du premier attribut du type composite pour ne garder que l'enveloppe externe, voir plus haut externe. fonctionne un peu comme le json
 
-/*-- 12- Si à la question 11 on voulait juste le résultat sous la forme d'une ligne, c'est à dire le contour externe*/
-/* on utiliserait juste la fonction st_ExteriorRing() qui renvoie une ligne représentant l'anneau extérieur d'un polygone.*/
+/*-- 12- Si à la question 11 on voulait juste le résultat sous la forme d'une ligne, c'est à dire le contour externe
+ on utiliserait juste la fonction st_ExteriorRing() qui renvoie une ligne représentant l'anneau extérieur d'un polygone.*/
 
 with cte_dep as (
     select 
@@ -252,8 +256,8 @@ with cte_dep as (
             when code_dep = '12' then 'Zou'
         end as nom_dep, 	
         st_Union(geom) as geom2
-    from commune 
-    group by code_dep
+		    from commune 
+		    group by code_dep
 )
 select 
     code_dep, 
