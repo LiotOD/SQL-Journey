@@ -1,7 +1,7 @@
 /*Les données sont dans le dossier data du repo SQL-Journey. Je travaillerai avec les localités et les limites de commune du Bénin.
 Vous pouvez ajouter ces données à une bdd en utilisant qgis, arcgis pro, fme par exemple. Il y a aussi un backup de la base que vous pouvez utiliser directement
 Créez une base postgre que vous appelez postgis, ensuite vous faites un restore avec le fichier postgis.backup 
-ressource utile --> https://postgis.net/docs/manual-3.6/postgis_cheatsheet-fr.html */
+ressource utile --> (https://postgis.net/docs/manual-3.6/postgis_cheatsheet-fr.html) */
 
 /*--1-Trouver le scr des données*/
 select st_srid(geom) as srid 
