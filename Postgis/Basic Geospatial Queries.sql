@@ -268,6 +268,35 @@ from cte_dep ;
 
 
 /*--15- Compter le nombre de communes dans chaque département, le nombre d'arronndissement, et le nombre de localités en utilisant les tables localite et commune et la vue v_depar*/
+-- Jabuse avec les cte mais c'est tellement plus simple avec 🤣🤣🤣🤣🤣
+with cte_commune as (
+select code_dep, count(*) as nb_commune from commune
+group by code_dep
+),
+cte_arrond as (
+select v_depar.code_dep, count( distinct localite.arrondisst) AS nb_arrond
+FROM v_depar 
+LEFT JOIN localite 
+ON st_contains(v_depar.geom, localite.geom) 
+GROUP BY v_depar.code_dep
+),
+cte_localite as (
+select v_depar.code_dep, count(localite.geom) AS nb_localite
+FROM v_depar 
+LEFT JOIN localite 
+ON st_contains(v_depar.geom,localite.geom) 
+GROUP BY v_depar.code_dep
+)
+select v_depar.code_dep, v_depar.nom_dep, cte_commune.nb_commune, 
+cte_arrond.nb_arrond, cte_localite.nb_localite, v_depar.geom
+from v_depar
+left join cte_commune on cte_commune.code_dep = v_depar.code_dep 
+left join cte_arrond on cte_arrond.code_dep = v_depar.code_dep 
+left join cte_localite on cte_localite.code_dep = v_depar.code_dep 
+order by v_depar.code_dep ;
+
+
+
 
 
 
